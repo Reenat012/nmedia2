@@ -23,14 +23,13 @@ class PostViewModel : ViewModel() {
             if (it.content != text.trim()) { //проверяем не равен ли существующий текст вновь введенному (trim - без учета пробелом)
                 repository.save(it.copy(content = text))
             }
-
-            //проверка если пользователь нажмет кнопку назад при редактировании и в качестве result придет null
-            if (it.content == null) {
-                edited.value = empty
-                return
-            }
             edited.value = empty
         }
+    }
+
+    //функция отмены редактирования и очистка поста
+    fun cancelEdit() {
+        edited.value = empty
     }
 
     fun cancelChangeContent() {

@@ -32,8 +32,23 @@ class MainActivity : AppCompatActivity() {
         val viewModel: PostViewModel by viewModels()
 
         val newPostLauncher = registerForActivityResult(NewPostContract) {
-            val result = it ?: return@registerForActivityResult
-            viewModel.changeContentAndSave(result)
+            //получаем результат
+//            val result = it ?: return@registerForActivityResult
+//            viewModel.changeContentAndSave(result)
+
+            //получаем результат лаунчера
+            val result = it
+            //выполняем проверку на null
+            if (it !== null) {
+                if (result != null) {
+                    viewModel.changeContentAndSave(result)
+                }
+            } else {
+                //отменяем редактирование и очищаем пост
+                viewModel.cancelEdit()
+                //выходим из метода
+                return@registerForActivityResult
+            }
         }
 
         val adapter = PostAdapter(object : OnInteractionListener {
