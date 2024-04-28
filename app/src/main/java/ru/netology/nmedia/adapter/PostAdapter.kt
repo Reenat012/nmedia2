@@ -101,11 +101,17 @@ class PostViewHolder(
                 }.show()
             }
 
+
             if (post.video !== null) {
                 //делаем видимой группу с элементами видео
                 groupVideo.visibility = View.VISIBLE
                 tvVideoPublished.text = post.video.toString()
                 videoView.setImageResource(R.drawable.image_leo)
+            }
+
+            //условия для скрытия groupVideo
+            if (post.video == null) {
+                groupVideo.visibility = View.GONE
             }
 
             //TODO обработчик нажатия на видео
