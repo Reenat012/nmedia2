@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- состояние при нажатом лайке -->
+    <item
+        android:drawable="@drawable/like_svgrepo_com_2"
+        android:state_checked="true">
+    </item>
+    <!-- во всех остальных случаях -->
+    <item android:drawable="@drawable/like_svgrepo_com" />
+</selector>
