@@ -1,10 +1,13 @@
 package ru.netology.nmedia.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryMemoryInImpl
+import ru.netology.nmedia.repository.PostRepositorySharedPrefsMemoryInImpl
 
 private val empty = Post(
     id = 0,
@@ -14,8 +17,8 @@ private val empty = Post(
     published = ""
 )
 
-class PostViewModel : ViewModel() {
-    private val repository: PostRepository = PostRepositoryMemoryInImpl()
+class PostViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: PostRepository = PostRepositorySharedPrefsMemoryInImpl(application )
     val data = repository.getAll()
     val edited = MutableLiveData(empty) //хранит состояние редактированного поста
     fun changeContentAndSave(text: String) {
