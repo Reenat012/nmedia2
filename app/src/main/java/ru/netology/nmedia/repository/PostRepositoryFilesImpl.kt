@@ -1,13 +1,36 @@
 package ru.netology.nmedia.repository
 
+import UriDeserializer
+import UriSerializer
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
+
 import ru.netology.nmedia.Post
 
-class PostRepositoryMemoryInImpl : PostRepository {
+class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
+    companion object {
+        private const val FILE_NAME = "posts.json"
+    }
 
+    val gson = GsonBuilder()
+        .registerTypeAdapter(Uri::class.java, UriSerializer())
+        .registerTypeAdapter(Uri::class.java, UriDeserializer())
+        .create()
+
+    private val typeToken = TypeToken.getParameterized(List::class.java, Post::class.java).type//обьясняем gson что мы хотим получить List(список) из Post
     private var nextId: Long = 0
-    private var posts = listOf(
+    //переменная для хранения постов
+    private var posts = emptyList<Post>()
+        private set(value)  {
+            field = value
+            sync()
+        }
+    private var defaultPosts = listOf(
         Post(
             id = nextId++,
             author = "Нетология. Университет интернет-профессий будущего",
@@ -17,7 +40,7 @@ class PostRepositoryMemoryInImpl : PostRepository {
             likes = 999,
             reposts = 999,
             views = 3_123_123,
-            video = "http://www.youtube.com/watch?v=8PORS-t9oOM"
+//            video = "http://www.youtube.com/watch?v=8PORS-t9oOM"
         ),
         Post(
             id = nextId++,
@@ -42,6 +65,31 @@ class PostRepositoryMemoryInImpl : PostRepository {
     )
 
     private val data = MutableLiveData(posts)
+
+    //блок для получения данных в виде String
+    init {
+        //получаем путь к файлу
+        val file = context.filesDir.resolve(FILE_NAME)
+        //проверяем существует ли файл по такому пути
+        if (file.exists()) {
+             context.openFileInput(FILE_NAME).bufferedReader().use {
+                 posts = gson.fromJson(it, typeToken)
+                 nextId = posts.maxOf { it.id } + 1
+             }
+        } else {
+            //если null
+            posts = defaultPosts
+        }
+        //обновляем данные в data
+        data.value = posts
+    }
+
+    //блок для записи
+    private fun sync() {
+        context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE).bufferedWriter().use {
+            it.write(gson.toJson(posts))
+        }
+    }
 
     override fun repost(id: Long) {
         posts = posts.map { if (it.id != id) it else it.copy(reposts = it.reposts + 1) }

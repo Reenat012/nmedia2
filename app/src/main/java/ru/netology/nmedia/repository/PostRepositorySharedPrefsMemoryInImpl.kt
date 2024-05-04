@@ -1,13 +1,28 @@
 package ru.netology.nmedia.repository
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import ru.netology.nmedia.Post
 
-class PostRepositoryMemoryInImpl : PostRepository {
+class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
+    companion object {
+        private const val KEY = "posts"
+    }
 
+    private val gson = Gson()//подключаем библиотеку для хранения данных gson
+    private val prefs = context.getSharedPreferences("repo", Context.MODE_PRIVATE) //создаем shred preferens
+    private val typeToken = TypeToken.getParameterized(List::class.java, Post::class.java).type//обьясняем gson что мы хотим получить List(список) из Post
     private var nextId: Long = 0
-    private var posts = listOf(
+    //переменная для хранения постов
+    private var posts = emptyList<Post>()
+        private set(value)  {
+            field = value
+            sync()
+        }
+    private var defaultPosts = listOf(
         Post(
             id = nextId++,
             author = "Нетология. Университет интернет-профессий будущего",
@@ -27,7 +42,7 @@ class PostRepositoryMemoryInImpl : PostRepository {
             likedByMe = false,
             likes = 999,
             reposts = 999,
-            views = 3_123_123
+            views = 3_123_123,
         ),
         Post(
             id = nextId++,
@@ -42,6 +57,28 @@ class PostRepositoryMemoryInImpl : PostRepository {
     )
 
     private val data = MutableLiveData(posts)
+
+    //блок для получения данных в виде String
+    init {
+        prefs.getString(KEY, null )?.let {
+            //получаем посты из gson в формате указанном в typeToken
+            posts = gson.fromJson(it, typeToken)
+            nextId = posts.maxOf { it.id } + 1
+        } ?: run {
+            //если null
+            posts = defaultPosts
+        }
+        //обновляем данные в data
+        data.value = posts
+    }
+
+    //блок для записи
+    fun sync() {
+        with(prefs.edit()) {
+            putString(KEY, gson.toJson(posts))
+            apply() //сохраняем данные на диск асинхронно
+        }
+    }
 
     override fun repost(id: Long) {
         posts = posts.map { if (it.id != id) it else it.copy(reposts = it.reposts + 1) }
