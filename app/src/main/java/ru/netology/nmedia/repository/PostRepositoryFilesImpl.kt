@@ -74,7 +74,7 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         if (file.exists()) {
              context.openFileInput(FILE_NAME).bufferedReader().use {
                  posts = gson.fromJson(it, typeToken)
-                 posts.maxOfOrNull { it.id }?.inc() ?: 1
+                 nextId = posts.maxOfOrNull { it.id }?.inc() ?: 1
              }
         } else {
             //если null
