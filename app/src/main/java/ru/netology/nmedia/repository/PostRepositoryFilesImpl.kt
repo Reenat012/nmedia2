@@ -40,7 +40,7 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
             likes = 999,
             reposts = 999,
             views = 3_123_123,
-//            video = "http://www.youtube.com/watch?v=8PORS-t9oOM"
+            video = "http://www.youtube.com/watch?v=8PORS-t9oOM"
         ),
         Post(
             id = nextId++,
@@ -124,3 +124,4 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         data.value = posts
     }
 }
+
