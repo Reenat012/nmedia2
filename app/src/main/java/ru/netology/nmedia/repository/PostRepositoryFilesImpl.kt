@@ -1,11 +1,15 @@
 package ru.netology.nmedia.repository
 
+import UriDeserializer
+import UriSerializer
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+
 import ru.netology.nmedia.Post
 
 class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
@@ -13,7 +17,11 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         private const val FILE_NAME = "posts.json"
     }
 
-    private val gson = Gson() //подключаем библиотеку для хранения данных gson
+    val gson = GsonBuilder()
+        .registerTypeAdapter(Uri::class.java, UriSerializer())
+        .registerTypeAdapter(Uri::class.java, UriDeserializer())
+        .create()
+
     private val typeToken = TypeToken.getParameterized(List::class.java, Post::class.java).type//обьясняем gson что мы хотим получить List(список) из Post
     private var nextId: Long = 0
     //переменная для хранения постов
@@ -32,7 +40,7 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
             likes = 999,
             reposts = 999,
             views = 3_123_123,
-            video = Uri.parse("http://www.youtube.com/watch?v=8PORS-t9oOM")
+//            video = "http://www.youtube.com/watch?v=8PORS-t9oOM"
         ),
         Post(
             id = nextId++,

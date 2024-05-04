@@ -1,7 +1,6 @@
 package ru.netology.nmedia.repository
 
 import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
@@ -13,7 +12,7 @@ class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
         private const val KEY = "posts"
     }
 
-    private val gson = Gson() //подключаем библиотеку для хранения данных gson
+    private val gson = Gson()//подключаем библиотеку для хранения данных gson
     private val prefs = context.getSharedPreferences("repo", Context.MODE_PRIVATE) //создаем shred preferens
     private val typeToken = TypeToken.getParameterized(List::class.java, Post::class.java).type//обьясняем gson что мы хотим получить List(список) из Post
     private var nextId: Long = 0
@@ -33,7 +32,7 @@ class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
             likes = 999,
             reposts = 999,
             views = 3_123_123,
-            video = Uri.parse("http://www.youtube.com/watch?v=8PORS-t9oOM")
+            video = "http://www.youtube.com/watch?v=8PORS-t9oOM"
         ),
         Post(
             id = nextId++,
@@ -43,7 +42,7 @@ class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
             likedByMe = false,
             likes = 999,
             reposts = 999,
-            views = 3_123_123
+            views = 3_123_123,
         ),
         Post(
             id = nextId++,
