@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/padding"
-    tools:context=".activity.PostCardLayout">
+    tools:context=".activity.PostCardLayoutFragment">
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/iv_menu"
@@ -35,7 +35,7 @@
         android:layout_marginStart="@dimen/margin_start"
         android:ellipsize="end"
         android:lines="1"
-        android:text="@string/author"
+        android:text=""
         app:layout_constraintBottom_toTopOf="@id/tv_published"
         app:layout_constraintEnd_toStartOf="@id/iv_menu"
         app:layout_constraintStart_toEndOf="@id/iv_avatar"
@@ -47,7 +47,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_start"
-        android:text="@string/published"
+        android:text=""
         app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
         app:layout_constraintEnd_toStartOf="@id/iv_menu"
         app:layout_constraintStart_toEndOf="@id/iv_avatar"
@@ -65,7 +65,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_start"
-        android:text="@string/content"
+        android:text=""
         app:layout_constraintBottom_toTopOf="@id/video_view"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barrier_top"

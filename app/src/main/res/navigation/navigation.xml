@@ -13,9 +13,17 @@
         <action
             android:id="@+id/action_feedFragment_to_newPostFragment"
             app:destination="@id/newPostFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_postCardLayoutFragment"
+            app:destination="@id/postCardLayoutFragment" />
     </fragment>
     <fragment
         android:id="@+id/newPostFragment"
         android:name="ru.netology.nmedia.activity.NewPostFragment"
         android:label="NewPostFragment" />
+    <fragment
+        android:id="@+id/postCardLayoutFragment"
+        android:name="ru.netology.nmedia.activity.PostCardLayoutFragment"
+        android:label="activity_post_card_layout"
+        tools:layout="@layout/activity_post_card_layout" />
 </navigation>

@@ -47,5 +47,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun playVideo(post: Post) {
         post.video
     }
+
+    fun openPost(post: Post) {
+        repository.openPostById(post.id)
+    }
 }
 
