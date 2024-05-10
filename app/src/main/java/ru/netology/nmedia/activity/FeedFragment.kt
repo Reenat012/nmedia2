@@ -1,0 +1,148 @@
+package ru.netology.nmedia.activity
+
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.viewModels
+import androidx.constraintlayout.widget.Group
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import ru.netology.nmedia.Post
+import ru.netology.nmedia.R
+import ru.netology.nmedia.R.id.tv_content
+import ru.netology.nmedia.viewmodel.PostViewModel
+import ru.netology.nmedia.adapter.OnInteractionListener
+import ru.netology.nmedia.adapter.PostAdapter
+import ru.netology.nmedia.databinding.FragmentFeedBinding
+import ru.netology.nmedia.util.StringArg
+
+class FeedFragment : Fragment() {
+    val viewModel: PostViewModel by viewModels(
+        ownerProducer = ::requireParentFragment
+    )
+
+    companion object {
+        var Bundle.textArg: String? by StringArg
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, //класс в android, используемый для создания view
+        container: ViewGroup?, //специальный тип в android, используемый как контейнер для других видов
+        savedInstanceState: Bundle?
+    ): View {
+        //надуваем разметку
+        val binding = FragmentFeedBinding.inflate(
+            inflater,
+            container,
+            false
+        )
+
+        //теперь имеем возможность обращаться к группе элементов
+        val groupVideo = view?.findViewById<Group>(R.id.group_video)
+
+        val adapter = PostAdapter(object : OnInteractionListener {
+            override fun onEdit(post: Post) {
+                viewModel.edit(post)
+//              //TODO переход между активити для редактирования поста
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_newPostFragment,
+                    Bundle().apply {
+                        textArg = post.content
+                    })
+
+            }
+
+
+            override fun onLike(post: Post) {
+                viewModel.likeById(post.id)
+            }
+
+            override fun onRemove(post: Post) {
+                viewModel.removeById(post.id)
+//                binding.content.setText("") //удаляем текст после добавления
+//                AndroidUtils.hideKeyboard(binding.content) //убираем клавиатуру после добавления поста
+//                group.visibility = View.GONE
+            }
+
+            override fun onRepost(post: Post) {
+                //всплывающее окно поделиться
+                val intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, post.content)
+                }
+
+                //делаем диалог более стилизованным(красивым)
+                val shareIntent =
+                    Intent.createChooser(intent, getString(R.string.choser_share_post))
+                startActivity(shareIntent)
+
+                //подсчет количества репостов
+                viewModel.repost(post.id)
+            }
+
+            @SuppressLint("QueryPermissionsNeeded")
+            override fun playVideoInUri(post: Post) {
+                viewModel.playVideo(post)
+                //получаем url
+                val url = post.video.toString()
+                //создаем интент
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+
+                startActivity(intent)
+            }
+        })
+
+
+//        val newPostLauncher = registerForActivityResult(NewPostContract) {
+//            //получаем результат
+////            val result = it ?: return@registerForActivityResult
+////            viewModel.changeContentAndSave(result)
+//
+//            //получаем результат лаунчера
+//            val result = it
+//            //выполняем проверку на null
+//            if (it !== null) {
+//                if (result != null) {
+//                    viewModel.changeContentAndSave(result)
+//                }
+//            } else {
+//                //отменяем редактирование и очищаем пост
+//                viewModel.cancelEdit()
+//                //выходим из метода
+//                return@registerForActivityResult
+//            }
+//        }
+
+        binding.list.adapter = adapter
+        viewModel.data.observe(viewLifecycleOwner) { posts ->
+            val newPost = posts.size > adapter.currentList.size
+            adapter.submitList(posts) {
+                if (newPost) {
+                    binding.list.smoothScrollToPosition(0) //сверху сразу будет отображаться новый пост
+                }
+            } //при каждом изменении данных мы список постов записываем обновленный список постов
+        }
+
+        binding.bottomSave.setOnClickListener {
+            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            //обращаемся к контракту
+//            newPostLauncher.launch("")
+        }
+        return binding.root
+    }
+}
+
+
+
+
+
+
+
+
