@@ -44,7 +44,7 @@ class PostAdapter(
 
 class PostViewHolder(
     private val binding: ActivityPostCardLayoutBinding,
-    private val onLInteractionListener: OnInteractionListener
+    private val onLInteractionListener: Any
 ) : RecyclerView.ViewHolder(binding.root) {
     private val service = WallService()
 
