@@ -18,9 +18,11 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.R.id.tv_author
 import ru.netology.nmedia.R.id.tv_content
 import ru.netology.nmedia.activity.FeedFragment.Companion.textArg
+import ru.netology.nmedia.activity.PostCardLayoutFragment.Companion.idArg
 import ru.netology.nmedia.viewmodel.PostViewModel
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
+import ru.netology.nmedia.adapter.PostViewHolder
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.util.StringArg
 
@@ -47,6 +49,7 @@ class FeedFragment : Fragment() {
 
         //теперь имеем возможность обращаться к группе элементов
         val groupVideo = view?.findViewById<Group>(R.id.group_video)
+
 
         val adapter = PostAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
@@ -99,30 +102,11 @@ class FeedFragment : Fragment() {
 
             override fun openPost(post: Post) {
                 viewModel.openPost(post)
-                findNavController().navigate(R.id.action_feedFragment_to_postCardLayoutFragment)
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_postCardLayoutFragment,
+                    Bundle().also { it.idArg = post.id })
             }
         })
-
-
-//        val newPostLauncher = registerForActivityResult(NewPostContract) {
-//            //получаем результат
-////            val result = it ?: return@registerForActivityResult
-////            viewModel.changeContentAndSave(result)
-//
-//            //получаем результат лаунчера
-//            val result = it
-//            //выполняем проверку на null
-//            if (it !== null) {
-//                if (result != null) {
-//                    viewModel.changeContentAndSave(result)
-//                }
-//            } else {
-//                //отменяем редактирование и очищаем пост
-//                viewModel.cancelEdit()
-//                //выходим из метода
-//                return@registerForActivityResult
-//            }
-//        }
 
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner) { posts ->

@@ -19,12 +19,17 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.adapter.PostViewHolder
 import ru.netology.nmedia.databinding.ActivityPostCardLayoutBinding
+import ru.netology.nmedia.util.LongArg
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class PostCardLayoutFragment : Fragment() {
-    val viewModel: PostViewModel by viewModels(
+    private val postViewModel: PostViewModel by viewModels(
         ownerProducer = ::requireParentFragment
     )
+
+    companion object {
+        var Bundle.idArg: Long by LongArg
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,12 +50,64 @@ class PostCardLayoutFragment : Fragment() {
             }
         }
 
-        val holder = PostViewHolder(binding, onInteractionListener)
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
+        val postId = arguments?.idArg
+
+        postViewModel.data.observe(viewLifecycleOwner) { posts ->
+            //получаем нужный пост по id, если null выходим из метода
             val post = posts.find { it.id == postId } ?: return@observe
-            holder.bind(post)
+            val viewHolder = PostViewHolder(binding, object : OnInteractionListener {
+
+                override fun onEdit(post: Post) {
+                    postViewModel.edit(post)
+                    findNavController().navigate(
+                        R.id.action_postCardLayoutFragment_to_newPostFragment,
+                        Bundle().apply {
+                            textArg = post.content
+                        })
+                }
+
+                override fun onLike(post: Post) {
+                    postViewModel.likeById(post.id)
+                }
+
+                override fun onRemove(post: Post) {
+                    postViewModel.removeById(post.id)
+                    findNavController().navigateUp()
+                }
+
+                override fun onRepost(post: Post) {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, post.content)
+                    }
+
+                    val shareIntent = Intent.createChooser(intent, "Share Post")
+                    startActivity(shareIntent)
+                }
+
+                override fun playVideoInUri(post: Post) {
+                    postViewModel.playVideo(post)
+                    //получаем url
+                    val url = post.video.toString()
+                    //создаем интент
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+
+                    startActivity(intent)
+                }
+
+                override fun openPost(post: Post) {
+                }
+
+            })
+            viewHolder.bind(post)
         }
-        
+
+
+
+
+
+
         binding.videoView.setOnClickListener {
             //получаем ссылку
             val url = Uri.parse(binding.tvVideoPublished.toString())

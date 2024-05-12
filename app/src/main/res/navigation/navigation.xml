@@ -25,5 +25,9 @@
         android:id="@+id/postCardLayoutFragment"
         android:name="ru.netology.nmedia.activity.PostCardLayoutFragment"
         android:label="activity_post_card_layout"
-        tools:layout="@layout/activity_post_card_layout" />
+        tools:layout="@layout/activity_post_card_layout" >
+        <action
+            android:id="@+id/action_postCardLayoutFragment_to_newPostFragment"
+            app:destination="@id/newPostFragment" />
+    </fragment>
 </navigation>
