@@ -2,12 +2,16 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.FeedFragment.Companion.textArg
 import ru.netology.nmedia.databinding.ActivityIntentHandlerBinding
@@ -50,6 +54,27 @@ class IntentHandlerActivity : AppCompatActivity() {
                     textArg = text
                 }
             )
+        }
+
+        checkGoogleApiAvailability()
+    }
+
+    private fun checkGoogleApiAvailability() {
+        with(GoogleApiAvailability.getInstance()) {
+            val code = isGooglePlayServicesAvailable(this@IntentHandlerActivity)
+            if (code == ConnectionResult.SUCCESS) {
+                return@with
+            }
+            if (isUserResolvableError(code)) {
+                getErrorDialog(this@IntentHandlerActivity, code, 9000)?.show()
+                return
+            }
+            Toast.makeText(this@IntentHandlerActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
+                .show()
+        }
+
+        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+            println(it)
         }
     }
 }

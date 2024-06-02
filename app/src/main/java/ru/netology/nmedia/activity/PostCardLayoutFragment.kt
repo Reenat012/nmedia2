@@ -103,11 +103,6 @@ class PostCardLayoutFragment : Fragment() {
             viewHolder.bind(post)
         }
 
-
-
-
-
-
         binding.videoView.setOnClickListener {
             //получаем ссылку
             val url = Uri.parse(binding.tvVideoPublished.toString())

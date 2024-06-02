@@ -14,4 +14,5 @@
     <string name="remove">Remove</string>
     <string name="description_share" translatable="false">Share</string>
     <string name="choser_share_post" translatable="false">Share</string>
+    <string name="google_play_unavailable" translatable="false">Google Api Недоступно</string>
 </resources>
