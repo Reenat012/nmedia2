@@ -75,4 +75,8 @@ class PostRepositoryMemoryInImpl : PostRepository {
         }
         data.value = posts
     }
+
+    override fun openPostById(id: Long): Post {
+        return posts[id.toInt()]
+    }
 }

@@ -112,4 +112,8 @@ class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
         }
         data.value = posts
     }
+
+    override fun openPostById(id: Long): Post {
+        return posts[id.toInt()]
+    }
 }

@@ -113,7 +113,6 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         data.value = posts
     }
 
-
     override fun save(post: Post) {
         posts = if (post.id == 0L) { //при id = 0 сохраняем новый пост
             listOf(
@@ -127,6 +126,10 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
             posts.map { if (post.id == it.id) it.copy(content = post.content) else it }
         }
         data.value = posts
+    }
+
+    override fun openPostById(id: Long): Post {
+        return posts[id.toInt()]
     }
 }
 

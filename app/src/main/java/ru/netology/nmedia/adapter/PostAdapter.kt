@@ -1,25 +1,16 @@
 package ru.netology.nmedia.adapter
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import android.widget.TextView
-import android.widget.VideoView
-import androidx.core.content.ContextCompat.getContextForLanguage
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
-import ru.netology.nmedia.R.drawable.image_leo
-import ru.netology.nmedia.R.menu
 import ru.netology.nmedia.WallService
-import ru.netology.nmedia.activity.PostCardLayout
 import ru.netology.nmedia.databinding.ActivityPostCardLayoutBinding
 
 interface OnInteractionListener {
@@ -28,6 +19,7 @@ interface OnInteractionListener {
     fun onRemove(post: Post)
     fun onEdit(post: Post)
     fun playVideoInUri(post: Post)
+    fun openPost(post: Post)
 }
 
 typealias OnListener = (post: Post) -> Unit //можем вводить новые константы для типов, которые хотим использовать
@@ -114,13 +106,18 @@ class PostViewHolder(
                 groupVideo.visibility = View.GONE
             }
 
-            //TODO обработчик нажатия на видео
+            // обработчик нажатия на видео
             videoView.setOnClickListener {
                 onLInteractionListener.playVideoInUri(post)
             }
 
             buttonPlay.setOnClickListener {
                 onLInteractionListener.playVideoInUri(post)
+            }
+
+            //клик на контент -> перходим в отдельный пост
+            tvContent.setOnClickListener {
+                onLInteractionListener.openPost(post)
             }
         }
 }
