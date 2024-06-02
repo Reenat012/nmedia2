@@ -9,10 +9,15 @@ import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import okhttp3.OkHttpClient
 
 import ru.netology.nmedia.Post
+import java.util.concurrent.TimeUnit
 
 class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
+    private val client = OkHttpClient.Builder()
+        .callTimeout(30, TimeUnit.SECONDS) //30 сек будем ждать вызова клиента
+        .build()
     companion object {
         private const val FILE_NAME = "posts.json"
     }
