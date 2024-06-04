@@ -2,12 +2,15 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.db.AppDb
+import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryFilesImpl
 import ru.netology.nmedia.repository.PostRepositoryImpl
+import kotlin.concurrent.thread
 
 private val empty = Post(
     id = 0,
@@ -18,10 +21,35 @@ private val empty = Post(
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: PostRepository = PostRepositoryImpl(
-        AppDb.getInstance(context = application).postDao()
-    )
-    val data = repository.getAll()
+    private val repository: PostRepository = PostRepositoryImpl()
+    private val _data = MutableLiveData<FeedModel>()
+    val data: LiveData<FeedModel>
+        get() = _data
+
+    private fun load() {
+        //создаем фоновый поток
+        thread {
+            //вызываем значок загрузки
+            //postValue безопасный метод в фоновом потоке вместо value, безопасно пробрасывает результат на основной поток MainThread
+            _data.postValue(FeedModel(loading = true))
+
+            try {
+                //если удалось получить посты с сервера, обновляем _data новыми постами
+                val posts = repository.getAll() //обращаемся к репозиторию и скачиваем посты
+                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
+            }
+            catch (e: Exception) {
+                //если нет ответа с сервера вызываем ошибку
+                _data.postValue(FeedModel(error = true))
+            }
+
+        }
+    }
+
+    init {
+        load()
+    }
+
     val edited = MutableLiveData(empty) //хранит состояние редактированного поста
     fun changeContentAndSave(text: String) {
         edited.value?.let {

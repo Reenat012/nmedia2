@@ -52,9 +52,9 @@ class PostCardLayoutFragment : Fragment() {
 
         val postId = arguments?.idArg
 
-        postViewModel.data.observe(viewLifecycleOwner) { posts ->
+        postViewModel.data.observe(viewLifecycleOwner) { model ->
             //получаем нужный пост по id, если null выходим из метода
-            val post = posts.find { it.id == postId } ?: return@observe
+            val post = model.posts.find { it.id == postId } ?: return@observe
             val viewHolder = PostViewHolder(binding, object : OnInteractionListener {
 
                 override fun onEdit(post: Post) {

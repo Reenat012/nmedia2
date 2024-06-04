@@ -15,9 +15,7 @@ import ru.netology.nmedia.Post
 import java.util.concurrent.TimeUnit
 
 class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
-    private val client = OkHttpClient.Builder()
-        .callTimeout(30, TimeUnit.SECONDS) //30 сек будем ждать вызова клиента
-        .build()
+
     companion object {
         private const val FILE_NAME = "posts.json"
     }
@@ -101,7 +99,9 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         data.value = posts
     }
 
-    override fun getAll(): LiveData<List<Post>> = data
+    override fun getAll(): List<Post> {
+        TODO()
+    }
 
     override fun likeById(id: Long) {
         posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }

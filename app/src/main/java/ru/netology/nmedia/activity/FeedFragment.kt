@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.Group
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -109,9 +110,12 @@ class FeedFragment : Fragment() {
         })
 
         binding.list.adapter = adapter
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            val newPost = posts.size > adapter.currentList.size
-            adapter.submitList(posts) {
+        viewModel.data.observe(viewLifecycleOwner) { model ->
+            binding.errorGroup.isVisible = model.error
+            binding.progressBar.isVisible = model.loading
+            binding.emptyPosts.isVisible = model.empty
+            val newPost = model.posts.size > adapter.currentList.size
+            adapter.submitList(model.posts) {
                 if (newPost) {
                     binding.list.smoothScrollToPosition(0) //сверху сразу будет отображаться новый пост
                 }

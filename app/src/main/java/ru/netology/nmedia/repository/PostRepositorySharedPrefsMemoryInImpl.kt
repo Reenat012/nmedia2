@@ -85,7 +85,9 @@ class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
         data.value = posts
     }
 
-    override fun getAll(): LiveData<List<Post>> = data
+    override fun getAll(): List<Post> {
+        TODO()
+    }
 
     override fun likeById(id: Long) {
         posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
