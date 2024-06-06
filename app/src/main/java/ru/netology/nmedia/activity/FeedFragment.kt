@@ -111,20 +111,26 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner) { model ->
-            binding.errorGroup.isVisible = model.error
-            binding.progressBar.isVisible = model.loading
-            binding.emptyPosts.isVisible = model.empty
             val newPost = model.posts.size > adapter.currentList.size
             adapter.submitList(model.posts) {
                 if (newPost) {
                     binding.list.smoothScrollToPosition(0) //сверху сразу будет отображаться новый пост
                 }
             } //при каждом изменении данных мы список постов записываем обновленный список постов
+            binding.errorGroup.isVisible = model.error
+            binding.progressBar.isVisible = model.loading
+            binding.emptyPosts.isVisible = model.empty
+
+
         }
 
         //клик на кнопку добавить пост
         binding.bottomSave.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+        }
+
+        binding.buttonRetry.setOnClickListener {
+            viewModel.load()
         }
 
         return binding.root

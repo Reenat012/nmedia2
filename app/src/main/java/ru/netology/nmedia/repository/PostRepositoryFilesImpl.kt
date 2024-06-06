@@ -103,9 +103,10 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         TODO()
     }
 
-    override fun likeById(id: Long) {
-        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
-        data.value = posts
+    override fun likeById(id: Long): Post {
+//        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
+//        data.value = posts
+        TODO()
     }
 
     override fun removeById(id: Long) {
@@ -113,19 +114,8 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         data.value = posts
     }
 
-    override fun save(post: Post) {
-        posts = if (post.id == 0L) { //при id = 0 сохраняем новый пост
-            listOf(
-            post.copy(
-                id = nextId++,
-                author = "Me",
-                published = "Now"
-            )
-        ) + posts}
-        else { //при id равному id другого поста редактируем пост с равным id
-            posts.map { if (post.id == it.id) it.copy(content = post.content) else it }
-        }
-        data.value = posts
+    override fun save(post: Post) : Post {
+        TODO()
     }
 
     override fun openPostById(id: Long): Post {

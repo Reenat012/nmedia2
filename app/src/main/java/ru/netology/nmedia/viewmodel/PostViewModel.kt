@@ -10,6 +10,8 @@ import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryFilesImpl
 import ru.netology.nmedia.repository.PostRepositoryImpl
+import ru.netology.nmedia.util.SingleLiveEvent
+import java.io.IOException
 import kotlin.concurrent.thread
 
 private val empty = Post(
@@ -26,7 +28,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val data: LiveData<FeedModel>
         get() = _data
 
-    private fun load() {
+    private val _postCreated = SingleLiveEvent<Unit>()
+    val postCreated: LiveData<Unit>
+        get() = _postCreated
+
+    fun load() {
         //создаем фоновый поток
         thread {
             //вызываем значок загрузки
@@ -50,13 +56,18 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         load()
     }
 
+    //запрос списка постов
+
     val edited = MutableLiveData(empty) //хранит состояние редактированного поста
     fun changeContentAndSave(text: String) {
-        edited.value?.let {
-            if (it.content != text.trim()) { //проверяем не равен ли существующий текст вновь введенному (trim - без учета пробелом)
-                repository.save(it.copy(content = text))
+        thread {
+            edited.value?.let {
+                if (it.content != text.trim()) { //проверяем не равен ли существующий текст вновь введенному (trim - без учета пробелом)
+                    repository.save(it.copy(content = text))
+                    _postCreated.postValue(Unit)
+                }
+                edited.postValue(empty) //postValue обновляем с фонового потока LiveData
             }
-            edited.value = empty
         }
     }
 
@@ -70,8 +81,27 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun repost(id: Long) = repository.repost(id)
-    fun likeById(id: Long) = repository.likeById(id)
-    fun removeById(id: Long) = repository.removeById(id)
+    fun likeById(id: Long) {
+        thread {
+            repository.likeById(id)
+        }
+    }
+    fun removeById(id: Long) {
+        thread {
+            // Оптимистичная модель
+            val old = _data.value?.posts.orEmpty()
+            _data.postValue(
+                _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                    .filter { it.id != id }
+                )
+            )
+            try {
+                repository.removeById(id)
+            } catch (e: IOException) {
+                _data.postValue(_data.value?.copy(posts = old))
+            }
+        }
+    }
     fun edit(post: Post) {
         edited.value = post //редактируемый пост записываем в LiveData edited
     }

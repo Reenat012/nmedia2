@@ -43,8 +43,13 @@ class NewPostFragment : Fragment() {
         binding.bottomSave.setOnClickListener {
             viewModel.changeContentAndSave(binding.content.text.toString())
             AndroidUtils.hideKeyboard(requireView()) //убираем клавиатуру
-            findNavController().navigateUp() //откатываем навигацию назад
+
        }
+
+        viewModel.postCreated.observe(viewLifecycleOwner) {
+            findNavController().navigateUp() //откатываем навигацию назад
+            viewModel.load()
+        }
         return binding.root
     }
 }
