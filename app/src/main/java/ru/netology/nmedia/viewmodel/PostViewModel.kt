@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.model.FeedModel
@@ -43,12 +44,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 //если удалось получить посты с сервера, обновляем _data новыми постами
                 val posts = repository.getAll() //обращаемся к репозиторию и скачиваем посты
                 _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 //если нет ответа с сервера вызываем ошибку
                 _data.postValue(FeedModel(error = true))
             }
-
         }
     }
 
@@ -84,8 +83,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun likeById(id: Long) {
         thread {
             repository.likeById(id)
+            repository.getPost(id) //обращаемся к репозиторию и обновляем пост
         }
     }
+
     fun removeById(id: Long) {
         thread {
             // Оптимистичная модель
@@ -102,6 +103,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
     fun edit(post: Post) {
         edited.value = post //редактируемый пост записываем в LiveData edited
     }

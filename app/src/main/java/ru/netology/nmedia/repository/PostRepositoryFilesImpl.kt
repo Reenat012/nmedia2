@@ -99,6 +99,10 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         data.value = posts
     }
 
+    override fun getPost(id: Long): Post {
+        TODO("Not yet implemented")
+    }
+
     override fun getAll(): List<Post> {
         TODO()
     }

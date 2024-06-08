@@ -30,6 +30,20 @@ class PostRepositoryImpl : PostRepository {
         TODO("Not yet implemented")
     }
 
+    override fun getPost(id: Long): Post {
+        val request = Request.Builder()
+            .url("${BASE_URL}api/slow/posts/$id")
+            .build()
+
+        val response = client.newCall(request)
+            .execute()
+
+        val responseText = response.body?.string() ?: error("Response body is null")
+
+        //преобразуем в список постов
+        return gson.fromJson(responseText/*откуда читаем*/, Post::class.java/*во что преобразовываем*/)
+    }
+
     override fun getAll(): List<Post> {
         //запрос на сервер
         val request = Request.Builder()
@@ -48,14 +62,23 @@ class PostRepositoryImpl : PostRepository {
     }
 
     override fun likeById(id: Long): Post {
+        val post = getPost(id)
+
         //запрос на сервер
         val requestLike = Request.Builder()
             .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
             .post("${BASE_URL}api/posts/$id/likes".toRequestBody())
             .build()
-        
+
+        val requestDislike = Request.Builder()
+            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
+            .delete("${BASE_URL}api/posts/$id/likes".toRequestBody())
+            .build()
+
         //ответ сервера
-        val response = client.newCall(requestLike)
+        val response = client.newCall(
+            if (!post.likedByMe) requestLike else requestDislike
+        )
             .execute()
 
         //получаем тело ответа с сервера
