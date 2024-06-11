@@ -4,15 +4,11 @@ import UriDeserializer
 import UriSerializer
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import okhttp3.OkHttpClient
 
 import ru.netology.nmedia.Post
-import java.util.concurrent.TimeUnit
 
 class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
 
@@ -103,8 +99,12 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getAll(): List<Post> {
+    fun getAll(): List<Post> {
         TODO()
+    }
+
+    override fun getAllAsync(callback: PostRepository.NmediaAllCallback<List<Post>>) {
+        TODO("Not yet implemented")
     }
 
     override fun likeById(id: Long): Post {
@@ -113,14 +113,23 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         TODO()
     }
 
-    override fun removeById(id: Long) {
-        posts = posts.filter { it.id != id } //оставляем только те посты, id которых не равны удаленному
-        data.value = posts
+    override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
     }
+
+    override fun removeById(id: Long) {
+        TODO("Not yet implemented")
+    }
+
 
     override fun save(post: Post) : Post {
         TODO()
     }
+
+    override fun saveAsync(post: Post, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
+    }
+
 
     override fun openPostById(id: Long): Post {
         return posts[id.toInt()]

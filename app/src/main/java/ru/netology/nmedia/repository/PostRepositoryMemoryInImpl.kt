@@ -1,6 +1,5 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.Post
 
@@ -44,7 +43,7 @@ class PostRepositoryMemoryInImpl : PostRepository {
     private val data = MutableLiveData(posts)
 
     override fun repost(id: Long) {
-        posts = posts.map { if (it.id != id) it else it.copy(reposts = it.reposts + 1) }
+        posts = posts.map { if (it.id.toLong() != id) it else it.copy(reposts = it.reposts + 1) }
         data.value = posts
     }
 
@@ -52,8 +51,12 @@ class PostRepositoryMemoryInImpl : PostRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getAll(): List<Post> {
+    fun getAll(): List<Post> {
         TODO()
+    }
+
+    override fun getAllAsync(callback: PostRepository.NmediaAllCallback<List<Post>>) {
+        TODO("Not yet implemented")
     }
 
     override fun likeById(id: Long): Post {
@@ -61,6 +64,11 @@ class PostRepositoryMemoryInImpl : PostRepository {
 //        data.value = posts
         TODO()
     }
+
+    override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
+    }
+
 
     override fun removeById(id: Long) {
         posts = posts.filter { it.id != id } //оставляем только те посты, id которых не равны удаленному
@@ -70,6 +78,10 @@ class PostRepositoryMemoryInImpl : PostRepository {
 
     override fun save(post: Post) : Post{
         TODO()
+    }
+
+    override fun saveAsync(post: Post, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
     }
 
     override fun openPostById(id: Long): Post {

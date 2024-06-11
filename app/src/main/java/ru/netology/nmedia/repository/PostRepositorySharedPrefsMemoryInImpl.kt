@@ -1,7 +1,6 @@
 package ru.netology.nmedia.repository
 
 import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -89,14 +88,22 @@ class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getAll(): List<Post> {
+    fun getAll(): List<Post> {
         TODO()
+    }
+
+    override fun getAllAsync(callback: PostRepository.NmediaAllCallback<List<Post>>) {
+        TODO("Not yet implemented")
     }
 
     override fun likeById(id: Long): Post{
 //        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
 //        data.value = posts
         TODO()
+    }
+
+    override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
     }
 
     override fun removeById(id: Long) {
@@ -107,6 +114,10 @@ class PostRepositorySharedPrefsMemoryInImpl(context: Context) : PostRepository {
 
     override fun save(post: Post) : Post {
         TODO()
+    }
+
+    override fun saveAsync(post: Post, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
     }
 
     override fun openPostById(id: Long): Post {
