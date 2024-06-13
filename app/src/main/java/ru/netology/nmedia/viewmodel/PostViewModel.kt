@@ -22,8 +22,8 @@ private val empty = Post(
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PostRepository = PostRepositoryImpl()
-    private val _data = MutableLiveData<FeedModel>()
-    val data: LiveData<FeedModel>
+    private val _data = MutableLiveData<FeedModel>() //изменяемое состояние экрана
+    val data: LiveData<FeedModel> //неизменяемое состояние экрана
         get() = _data
 
     private val _postCreated = SingleLiveEvent<Unit>()
@@ -56,17 +56,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     //запрос списка постов
 
     val edited = MutableLiveData(empty) //хранит состояние редактированного поста
-//    fun changeContentAndSave(text: String) {
-//        thread {
-//            edited.value?.let {
-//                if (it.content != text.trim()) { //проверяем не равен ли существующий текст вновь введенному (trim - без учета пробелом)
-//                    repository.save(it.copy(content = text))
-//                    _postCreated.postValue(Unit)
-//                }
-//                edited.postValue(empty) //postValue обновляем с фонового потока LiveData
-//            }
-//        }
-//    }
 
     fun changeContentAndSave(text: String) {
         edited.value?.let {
@@ -106,35 +95,33 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //    }
 
     fun likeById(id: Long) {
-        thread {
-            repository.likeByIdAsync(id, object :PostRepository.NmediaAllCallback<Post> {
-                override fun onSuccess(data: Post) {
-                    repository.getPost(id) //обращаемся к репозиторию и обновляем пост
-                }
+        val likedByMe = _data.value?.posts?.find { it.id == id }?.likedByMe ?: return
 
-                override fun error(e: Exception) {
-                    kotlin.error(e)
-                }
-            })
+        repository.likeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
+            override fun onSuccess(data: Post) {
+                _data.postValue(FeedModel(posts = _data.value?.posts?.find { it.id == id }.copy(likedByMe = likedByMe))
+            }
 
-        }
+            override fun error(e: Exception) {
+                kotlin.error(e)
+            }
+        })
     }
 
     fun removeById(id: Long) {
-        thread {
-            // Оптимистичная модель
-            val old = _data.value?.posts.orEmpty()
-            _data.postValue(
-                _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                    .filter { it.id.toLong() != id }
-                )
+        // Оптимистичная модель
+        val old = _data.value?.posts.orEmpty()
+        _data.postValue(
+            _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                .filter { it.id.toLong() != id }
             )
-            try {
-                repository.removeById(id)
-            } catch (e: IOException) {
-                _data.postValue(_data.value?.copy(posts = old))
-            }
+        )
+        try {
+            repository.removeById(id)
+        } catch (e: IOException) {
+            _data.postValue(_data.value?.copy(posts = old))
         }
+
     }
 
     fun edit(post: Post) {

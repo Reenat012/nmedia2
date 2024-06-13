@@ -71,7 +71,7 @@ class PostRepositoryImpl : PostRepository {
             .build()
 
         //ответ сервера
-        client.newCall(request)
+        return client.newCall(request)
             .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     callback.error(e)
@@ -131,7 +131,7 @@ class PostRepositoryImpl : PostRepository {
             .delete("${BASE_URL}api/posts/$id/likes".toRequestBody())
             .build()
 
-        client.newCall(if (!post.likedByMe) requestLike else requestDislike)
+        return client.newCall(if (!post.likedByMe) requestLike else requestDislike)
             .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     callback.error(e)
@@ -144,9 +144,7 @@ class PostRepositoryImpl : PostRepository {
                         callback.error(e)
                     }
                 }
-
             })
-
     }
 
     override fun save(post: Post): Post {
