@@ -6,9 +6,10 @@ interface PostRepository {
     fun repost(id: Long)
     fun getPost(id: Long): Post
     fun getAllAsync(callback: NmediaAllCallback<List<Post>>)
-    fun likeById(id: Long): Post
     fun likeByIdAsync(id: Long, callback: NmediaAllCallback<Post>)
+    fun disLikeByIdAsync(id: Long, callback: NmediaAllCallback<Post>)
     fun removeById(id: Long)
+    fun removeByIdAsync(id: Long, callback: NmediaAllCallback<Post>)
     fun save(post: Post): Post
     fun saveAsync(post: Post, callback: NmediaAllCallback<Post>)
     fun openPostById(id: Long): Post

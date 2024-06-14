@@ -107,17 +107,25 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         TODO("Not yet implemented")
     }
 
-    override fun likeById(id: Long): Post {
-//        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
-//        data.value = posts
-        TODO()
-    }
+//    override fun likeById(id: Long): Post {
+////        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
+////        data.value = posts
+//        TODO()
+//    }
 
     override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
         TODO("Not yet implemented")
     }
 
+    override fun disLikeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
+    }
+
     override fun removeById(id: Long) {
+        TODO("Not yet implemented")
+    }
+
+    override fun removeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
         TODO("Not yet implemented")
     }
 

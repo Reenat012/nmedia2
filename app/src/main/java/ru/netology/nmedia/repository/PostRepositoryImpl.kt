@@ -47,22 +47,6 @@ class PostRepositoryImpl : PostRepository {
         )
     }
 
-    fun getAll(): List<Post> {
-        //запрос на сервер
-        val request = Request.Builder()
-            .url("${BASE_URL}api/slow/posts") // /slow для задержки, имитируем реальный сервер
-            .build()
-
-        //ответ сервера
-        val response = client.newCall(request)
-            .execute()
-
-        //получаем тело ответа с сервера
-        val responseText = response.body?.string() ?: error("Response body is null")
-
-        //преобразуем в список постов
-        return gson.fromJson(responseText/*откуда читаем*/, type/*во что преобразовываем*/)
-    }
 
     override fun getAllAsync(callback: PostRepository.NmediaAllCallback<List<Post>>) {
         //запрос на сервер
@@ -87,51 +71,67 @@ class PostRepositoryImpl : PostRepository {
             })
     }
 
-    override fun likeById(id: Long): Post {
-        val post = getPost(id)
-
-        //запрос на сервер
-        val requestLike = Request.Builder()
-            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
-            .post("${BASE_URL}api/posts/$id/likes".toRequestBody())
-            .build()
-
-        val requestDislike = Request.Builder()
-            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
-            .delete("${BASE_URL}api/posts/$id/likes".toRequestBody())
-            .build()
-
-        //ответ сервера
-        val response = client.newCall(
-            if (!post.likedByMe) requestLike else requestDislike
-        )
-            .execute()
-
-        //получаем тело ответа с сервера
-        val responseText = response.body?.string() ?: error("Response body is null")
-
-        //преобразуем в список постов
-        return gson.fromJson(
-            responseText/*откуда читаем*/,
-            Post::class.java/*во что преобразовываем*/
-        )
-    }
+//    override fun likeById(id: Long): Post {
+//        val post = getPost(id)
+//
+//        //запрос на сервер
+//        val requestLike = Request.Builder()
+//            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
+//            .post("${BASE_URL}api/posts/$id/likes".toRequestBody())
+//            .build()
+//
+//        val requestDislike = Request.Builder()
+//            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
+//            .delete("${BASE_URL}api/posts/$id/likes".toRequestBody())
+//            .build()
+//
+//        //ответ сервера
+//        val response = client.newCall(
+//            if (!post.likedByMe) requestLike else requestDislike
+//        )
+//            .execute()
+//
+//        //получаем тело ответа с сервера
+//        val responseText = response.body?.string() ?: error("Response body is null")
+//
+//        //преобразуем в список постов
+//        return gson.fromJson(
+//            responseText/*откуда читаем*/,
+//            Post::class.java/*во что преобразовываем*/
+//        )
+//    }
 
     override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
-        val post = getPost(id)
-
         //запрос на сервер
         val requestLike = Request.Builder()
-            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
-            .post("${BASE_URL}api/posts/$id/likes".toRequestBody())
-            .build()
+                .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
+                .post("${BASE_URL}api/posts/$id/likes".toRequestBody())
+                .build()
 
-        val requestDislike = Request.Builder()
+        client.newCall(requestLike)
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    callback.error(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        callback.onSuccess(gson.fromJson(response.body?.string(), Post::class.java))
+                    } catch (e: Exception) {
+                        callback.error(e)
+                    }
+                }
+            })
+    }
+
+    override fun disLikeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        //запрос на сервер
+        val requestDisLike = Request.Builder()
             .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
             .delete("${BASE_URL}api/posts/$id/likes".toRequestBody())
             .build()
 
-        return client.newCall(if (!post.likedByMe) requestLike else requestDislike)
+        client.newCall(requestDisLike)
             .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     callback.error(e)
@@ -180,7 +180,7 @@ class PostRepositoryImpl : PostRepository {
             .build()
 
         //ответ сервера
-        val response = client.newCall(request)
+        client.newCall(request)
             .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     callback.error(e)
@@ -193,7 +193,6 @@ class PostRepositoryImpl : PostRepository {
                         callback.error(e)
                     }
                 }
-
             })
     }
 
@@ -201,19 +200,46 @@ class PostRepositoryImpl : PostRepository {
         TODO("Not yet implemented")
     }
 
-
     override fun removeById(id: Long) {
         val request: Request = Request.Builder()
             .delete()
             .url("${BASE_URL}/api/slow/posts/$id")
             .build()
 
+        //ответ сервера
+        client.newCall(request)
+            .execute()
+            .close()
+
+//        val responseText = response.body?.string() ?: error("Response body is null")
+//
+//        //преобразуем в список постов
+//        return gson.fromJson(
+//            responseText/*откуда читаем*/,
+//            type/*во что преобразовываем*/
+//        )
+    }
+
+    override fun removeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        val request: Request = Request.Builder()
+            .delete()
+            .url("${BASE_URL}/api/slow/posts/$id")
+            .build()
 
         //ответ сервера
-        val response = client.newCall(request)
-            .execute()
+        client.newCall(request)
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    callback.error(e)
+                }
 
-        //получаем тело ответа с сервера
-        val responseText = response.body?.string() ?: error("Response body is null")
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        callback.onSuccess(gson.fromJson(response.body?.string(), Post::class.java))
+                    } catch (e: Exception) {
+                        callback.error(e)
+                    }
+                }
+            })
     }
 }

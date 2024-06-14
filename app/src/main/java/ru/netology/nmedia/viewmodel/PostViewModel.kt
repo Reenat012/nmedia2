@@ -9,8 +9,6 @@ import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
-import java.io.IOException
-import kotlin.concurrent.thread
 
 private val empty = Post(
     id = 0,
@@ -95,33 +93,58 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //    }
 
     fun likeById(id: Long) {
-        val likedByMe = _data.value?.posts?.find { it.id == id }?.likedByMe ?: return
+        //получаем состояние likedByMe поста по id
+        val likedByMe = _data.value?.posts?.find { it.id == id }?.likedByMe
+        //если true - dislike, false - like
+        if (likedByMe == true) {
+            repository.disLikeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
+                override fun onSuccess(data: Post) {
+                    _data.postValue(_data.value?.posts?.map {
+                        if (it.id != id) it else it.copy(
+                            likedByMe = !it.likedByMe,
+                            likes = it.likes - 1
+                        )
+                    }
+                        ?.let { FeedModel(posts = it) })
+                }
 
-        repository.likeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
-            override fun onSuccess(data: Post) {
-                _data.postValue(FeedModel(posts = _data.value?.posts?.find { it.id == id }.copy(likedByMe = likedByMe))
-            }
+                override fun error(e: Exception) {
+                    kotlin.error(e)
+                }
+            })
+        } else {
+            repository.likeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
+                override fun onSuccess(data: Post) {
+                    _data.postValue(_data.value?.posts?.map {
+                        if (it.id != id) it else it.copy(
+                            likedByMe = !it.likedByMe,
+                            likes = it.likes + 1
+                        )
+                    }
+                        ?.let { FeedModel(posts = it) })
+                }
 
-            override fun error(e: Exception) {
-                kotlin.error(e)
-            }
-        })
+                override fun error(e: Exception) {
+                    kotlin.error(e)
+                }
+            })
+        }
     }
 
     fun removeById(id: Long) {
         // Оптимистичная модель
         val old = _data.value?.posts.orEmpty()
-        _data.postValue(
-            _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                .filter { it.id.toLong() != id }
-            )
-        )
-        try {
-            repository.removeById(id)
-        } catch (e: IOException) {
-            _data.postValue(_data.value?.copy(posts = old))
-        }
+//
+        repository.removeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
+            override fun onSuccess(data: Post) {
+                _data.postValue(_data.value?.posts?.filter { it.id != id }
+                    ?.let { FeedModel(posts = it) })
+            }
 
+            override fun error(e: Exception) {
+                _data.postValue(_data.value?.copy(posts = old))
+            }
+        })
     }
 
     fun edit(post: Post) {

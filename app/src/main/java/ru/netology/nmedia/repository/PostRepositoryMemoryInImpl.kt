@@ -59,20 +59,29 @@ class PostRepositoryMemoryInImpl : PostRepository {
         TODO("Not yet implemented")
     }
 
-    override fun likeById(id: Long): Post {
-//        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
-//        data.value = posts
-        TODO()
-    }
+//    override fun likeById(id: Long): Post {
+////        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
+////        data.value = posts
+//        TODO()
+//    }
 
     override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
         TODO("Not yet implemented")
     }
 
+    override fun disLikeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
+    }
+
 
     override fun removeById(id: Long) {
-        posts = posts.filter { it.id != id } //оставляем только те посты, id которых не равны удаленному
-        data.value = posts
+        TODO()
+//        posts = posts.filter { it.id != id } //оставляем только те посты, id которых не равны удаленному
+//        data.value = posts
+    }
+
+    override fun removeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
     }
 
 
