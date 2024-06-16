@@ -14,4 +14,6 @@
     <string name="remove">Remove</string>
     <string name="description_share" translatable="false">Share</string>
     <string name="choser_share_post" translatable="false">Share</string>
+    <string name="network_error" translatable="false">Network error</string>
+    <string name="empty_posts" translatable="false">There is not posts</string>
 </resources>

@@ -4,15 +4,14 @@ import UriDeserializer
 import UriSerializer
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 
 import ru.netology.nmedia.Post
 
 class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
+
     companion object {
         private const val FILE_NAME = "posts.json"
     }
@@ -96,32 +95,49 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
         data.value = posts
     }
 
-    override fun getAll(): LiveData<List<Post>> = data
+    override fun getPost(id: Long): Post {
+        TODO("Not yet implemented")
+    }
 
-    override fun likeById(id: Long) {
-        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
-        data.value = posts
+    fun getAll(): List<Post> {
+        TODO()
+    }
+
+    override fun getAllAsync(callback: PostRepository.NmediaAllCallback<List<Post>>) {
+        TODO("Not yet implemented")
+    }
+
+//    override fun likeById(id: Long): Post {
+////        posts = posts.map { if (it.id != id) it else it.copy(likedByMe = !it.likedByMe, likes = if (!it.likedByMe) it.likes + 1 else it.likes - 1) }
+////        data.value = posts
+//        TODO()
+//    }
+
+    override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun disLikeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
     }
 
     override fun removeById(id: Long) {
-        posts = posts.filter { it.id != id } //оставляем только те посты, id которых не равны удаленному
-        data.value = posts
+        TODO("Not yet implemented")
     }
 
-    override fun save(post: Post) {
-        posts = if (post.id == 0L) { //при id = 0 сохраняем новый пост
-            listOf(
-            post.copy(
-                id = nextId++,
-                author = "Me",
-                published = "Now"
-            )
-        ) + posts}
-        else { //при id равному id другого поста редактируем пост с равным id
-            posts.map { if (post.id == it.id) it.copy(content = post.content) else it }
-        }
-        data.value = posts
+    override fun removeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
     }
+
+
+    override fun save(post: Post) : Post {
+        TODO()
+    }
+
+    override fun saveAsync(post: Post, callback: PostRepository.NmediaAllCallback<Post>) {
+        TODO("Not yet implemented")
+    }
+
 
     override fun openPostById(id: Long): Post {
         return posts[id.toInt()]
