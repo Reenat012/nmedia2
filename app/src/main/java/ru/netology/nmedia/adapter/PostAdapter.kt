@@ -57,7 +57,7 @@ class PostViewHolder(
     @SuppressLint("QueryPermissionsNeeded")
     fun bind(post: Post) =
         binding.apply {
-            post.authorAvatar?.let { ivAvatar.load(it) }
+            post.authorAvatar?.let { ivAvatar.load(it) } //присваиваем новую аватарку
             tvAuthor.text = post.author
             tvPublished.text = post.published
             tvContent.text = post.content
