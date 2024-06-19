@@ -14,6 +14,7 @@ private val empty = Post(
     id = 0,
     content = "",
     author = "",
+    authorAvatar = "http://10.0.2.2:9999/avatars/netology.jpg",
     likedByMe = false,
     published = ""
 )

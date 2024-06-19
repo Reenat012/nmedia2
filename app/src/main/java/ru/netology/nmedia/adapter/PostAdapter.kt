@@ -12,6 +12,7 @@ import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.WallService
 import ru.netology.nmedia.databinding.ActivityPostCardLayoutBinding
+import ru.netology.nmedia.load
 
 interface OnInteractionListener {
     fun onLike(post: Post)
@@ -48,9 +49,15 @@ class PostViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
     private val service = WallService()
 
+    val urlNeto = "http://10.0.2.2:9999/avatars/netology.jpg"
+    val urlSber = "http://10.0.2.2:9999/avatars/sber.jpg"
+    val urlTcs = "http://10.0.2.2:9999/avatars/tcs.jpg"
+    val url404 = "http://10.0.2.2:9999/avatars/404.png"
+
     @SuppressLint("QueryPermissionsNeeded")
     fun bind(post: Post) =
         binding.apply {
+            post.authorAvatar?.let { ivAvatar.load(it) }
             tvAuthor.text = post.author
             tvPublished.text = post.published
             tvContent.text = post.content
