@@ -14,17 +14,18 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
         dataBinding = true
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
         release {
+            buildConfigField("String", "BASE_URL", "\"https://netology.ru/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -32,7 +33,7 @@ android {
             )
         }
         debug {
-
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:9999/\"")
         }
     }
     compileOptions {
@@ -59,9 +60,12 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
     implementation("androidx.room:room-runtime:2.6.1")
-    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.ai.client.generativeai:generativeai:0.8.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     kapt("androidx.room:room-compiler:2.6.1")
 
     testImplementation("junit:junit:4.13.2")

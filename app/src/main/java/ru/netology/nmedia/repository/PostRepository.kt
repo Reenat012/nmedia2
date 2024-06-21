@@ -4,7 +4,7 @@ import ru.netology.nmedia.Post
 
 interface PostRepository {
     fun repost(id: Long)
-    fun getPost(id: Long): Post
+    fun getAll() : List<Post>
     fun getAllAsync(callback: NmediaAllCallback<List<Post>>)
     fun likeByIdAsync(id: Long, callback: NmediaAllCallback<Post>)
     fun disLikeByIdAsync(id: Long, callback: NmediaAllCallback<Post>)
