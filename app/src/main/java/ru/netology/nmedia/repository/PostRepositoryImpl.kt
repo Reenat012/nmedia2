@@ -2,6 +2,7 @@ package ru.netology.nmedia.repository
 
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.Response
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.ApiService
 
@@ -30,7 +31,8 @@ class PostRepositoryImpl : PostRepository {
                     call: Call<List<Post>>,
                     response: retrofit2.Response<List<Post>>
                 ) {
-                    if (response.isSuccessful) {
+                    //если от сервера приходит ответ отличный от 200...299
+                    if (!response.isSuccessful) {
                         callback.error(RuntimeException(response.message()))
                         return
                     }
@@ -83,6 +85,10 @@ class PostRepositoryImpl : PostRepository {
                     call: retrofit2.Call<Post>,
                     response: retrofit2.Response<Post>
                 ) {
+                    if (!response.isSuccessful) {
+                        callback.error(RuntimeException(response.message()))
+                        return
+                    }
                     callback.onSuccess(response.body() ?: throw Exception("Body is null"))
                 }
 
@@ -120,6 +126,10 @@ class PostRepositoryImpl : PostRepository {
                     call: retrofit2.Call<Post>,
                     response: retrofit2.Response<Post>
                 ) {
+                    if (!response.isSuccessful) {
+                        callback.error(RuntimeException(response.message()))
+                        return
+                    }
                     callback.onSuccess(response.body() ?: throw Exception("Body is null"))
                 }
 
@@ -158,12 +168,16 @@ class PostRepositoryImpl : PostRepository {
     }
 
     override fun saveAsync(post: Post, callback: PostRepository.NmediaAllCallback<Post>) {
-        ApiService.service.savePost(post)
+        return ApiService.service.savePost(post)
             .enqueue(object :Callback<Post> {
                 override fun onResponse(
                     call: retrofit2.Call<Post>,
                     response: retrofit2.Response<Post>
                 ) {
+                    if (!response.isSuccessful) {
+                        callback.error(RuntimeException(response.message()))
+                        return
+                    }
                     callback.onSuccess(response.body() ?: throw Exception("Body is null"))
                 }
 
@@ -210,16 +224,19 @@ class PostRepositoryImpl : PostRepository {
     override fun removeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
         ApiService.service.removeById(id)
             .enqueue(object :Callback<Post> {
-                override fun onResponse(
-                    call: retrofit2.Call<Post>,
-                    response: retrofit2.Response<Post>
-                ) {
+                override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                    if (!response.isSuccessful) {
+                        callback.error(RuntimeException(response.message()))
+                        return
+                    }
                     callback.onSuccess(response.body() ?: throw Exception("Body is null"))
                 }
 
                 override fun onFailure(call: Call<Post>, t: Throwable) {
                     callback.error(Exception(t))
                 }
+
+
             })
 
 //        //ответ сервера
