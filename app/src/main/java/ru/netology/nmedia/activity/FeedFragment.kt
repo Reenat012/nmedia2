@@ -13,6 +13,8 @@ import androidx.constraintlayout.widget.Group
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
@@ -25,6 +27,7 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.adapter.PostViewHolder
 import ru.netology.nmedia.databinding.FragmentFeedBinding
+import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.util.StringArg
 
 class FeedFragment : Fragment() {
@@ -50,7 +53,6 @@ class FeedFragment : Fragment() {
 
         //теперь имеем возможность обращаться к группе элементов
         val groupVideo = view?.findViewById<Group>(R.id.group_video)
-
 
         val adapter = PostAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
@@ -117,13 +119,14 @@ class FeedFragment : Fragment() {
                     binding.list.smoothScrollToPosition(0) //сверху сразу будет отображаться новый пост
                 }
             } //при каждом изменении данных мы список постов записываем обновленный список постов
-            binding.errorGroup.isVisible = model.error
-            binding.progressBar.isVisible = model.loading
+
             binding.emptyPosts.isVisible = model.empty
-
-
         }
 
+        viewModel.state.observe(viewLifecycleOwner) {state ->
+            binding.errorGroup.isVisible = state.error
+            binding.progressBar.isVisible = state.loading
+        }
         //клик на кнопку добавить пост
         binding.bottomSave.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)

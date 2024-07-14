@@ -12,13 +12,13 @@ interface PostDao {
     fun getAll(): LiveData<List<PostEntity>>
 
     @Insert
-    suspend fun insert(post: PostEntity)
+    suspend fun insert(post: kotlin.collections.List<ru.netology.nmedia.entity.PostEntity?>)
 
     @Query("UPDATE PostEntity SET content = :content WHERE id = :id")
     suspend fun updateContentById(id: Long, content: String)
 
-    suspend fun save(post: PostEntity) =
-        if (post.id == 0L) insert(post) else updateContentById(post.id, post.content)
+//    suspend fun save(post: PostEntity) =
+//        if (post.id == 0L) insert(post) else updateContentById(post.id, post.content)
 
     @Query("""
         UPDATE PostEntity SET
