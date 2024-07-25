@@ -29,14 +29,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         AppDb.getInstance(application).postDao()
     )
     private val _state = MutableLiveData<FeedModelState>() //изменяемое состояние экрана
-    val state : LiveData<FeedModelState>
+    val state: LiveData<FeedModelState>
         get() = _state
+
     //неизменяемое состояние экрана
     val data: LiveData<FeedModel> = repository.data.map {
         FeedModel(posts = it, empty = it.isEmpty())
     }
 
-
+    private val _data = MutableLiveData<FeedModel>()
 
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
@@ -58,6 +59,25 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 FeedModelState(error = true)
             }
 
+        }
+    }
+
+    fun refreshPosts() {
+        //создаем корутину
+        viewModelScope.launch {
+            //создаем фоновый поток
+            //вызываем значок загрузки
+            //postValue безопасный метод в фоновом потоке вместо value, безопасно пробрасывает результат на основной поток MainThread
+            _state.postValue(FeedModelState(refreshing = true))
+
+            _state.value = try {
+                repository.getAll()
+                //если все хорошо, все флаги выключены
+                FeedModelState()
+            } catch (e: Exception) {
+                //если ошибка, выбрасываем предупреждение
+                FeedModelState(error = true)
+            }
         }
     }
 
@@ -99,58 +119,53 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //    }
 
     fun likeById(id: Long) {
-//        //получаем состояние likedByMe поста по id
-//        val likedByMe = _data.value?.posts?.find { it.id == id }?.likedByMe
-//        //если true - dislike, false - like
-//        if (likedByMe == true) {
-//            repository.disLikeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
-//                override fun onSuccess(data: Post) {
-//                    _data.postValue(_data.value?.posts?.map {
-//                        if (it.id != id) it else it.copy(
-//                            likedByMe = !it.likedByMe,
-//                            likes = it.likes - 1
-//                        )
-//                    }
-//                        ?.let { FeedModel(posts = it) })
-//                }
-//
-//                override fun error(e: Exception) {
-//                    kotlin.error(e)
-//                }
-//            })
-//        } else {
-//            repository.likeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
-//                override fun onSuccess(data: Post) {
-//                    _data.postValue(_data.value?.posts?.map {
-//                        if (it.id != id) it else it.copy(
-//                            likedByMe = !it.likedByMe,
-//                            likes = it.likes + 1
-//                        )
-//                    }
-//                        ?.let { FeedModel(posts = it) })
-//                }
-//
-//                override fun error(e: Exception) {
-//                    kotlin.error(e)
-//                }
-//            })
-//        }
+        //получаем состояние likedByMe поста по id
+        viewModelScope.launch {
+            val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe
+            //если true - dislike, false - like
+            if (likedByMe == true) {
+                try{
+                    repository.disLikeByIdAsync(id)
+                    _data.postValue(_data.value?.posts?.map {
+                        if (it.id != id) it else it.copy(
+                            likedByMe = !it.likedByMe,
+                            likes = it.likes - 1
+                        )
+                    }
+                        ?.let { FeedModel(posts = it) })
+                } catch (e: Exception) {
+                    throw RuntimeException(e)
+                }
+            } else {
+                try {
+                    repository.likeByIdAsync(id)
+                    _data.postValue(_data.value?.posts?.map {
+                        if (it.id != id) it else it.copy(
+                            likedByMe = !it.likedByMe,
+                            likes = it.likes + 1
+                        )
+                    }
+                        ?.let { FeedModel(posts = it) })
+                } catch (e: Exception) {
+                    throw RuntimeException(e)
+                }
+            }
+        }
     }
 
     fun removeById(id: Long) {
-//        // Оптимистичная модель
-//        val old = _data.value?.posts.orEmpty()
-////
-//        repository.removeByIdAsync(id, object : PostRepository.NmediaAllCallback<Post> {
-//            override fun onSuccess(data: Post) {
-//                _data.postValue(_data.value?.posts?.filter { it.id != id }
-//                    ?.let { FeedModel(posts = it) })
-//            }
-//
-//            override fun error(e: Exception) {
-//                _data.postValue(_data.value?.copy(posts = old))
-//            }
-//        })
+        // Оптимистичная модель
+        viewModelScope.launch {
+            val old = _data.value?.posts.orEmpty()
+
+            try {
+                repository.removeByIdAsync(id)
+                _data.postValue(_data.value?.posts?.filter { it.id != id }
+                    ?.let { FeedModel(posts = it) })
+            } catch (e: Exception) {
+                _data.postValue(_data.value?.copy(posts = old))
+            }
+        }
     }
 
     fun edit(post: Post) {

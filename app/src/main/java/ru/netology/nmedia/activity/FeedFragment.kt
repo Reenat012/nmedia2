@@ -16,6 +16,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.R.id.tv_author
@@ -123,18 +124,29 @@ class FeedFragment : Fragment() {
             binding.emptyPosts.isVisible = model.empty
         }
 
-        viewModel.state.observe(viewLifecycleOwner) {state ->
-            binding.errorGroup.isVisible = state.error
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            if (state.error) {
+                Snackbar.make(binding.root, R.string.network_error, Snackbar.LENGTH_SHORT)
+                    .setAction(R.string.retry_loading) {
+                        viewModel.load()
+                    }
+                    .show()
+        }
             binding.progressBar.isVisible = state.loading
+            binding.refresh.isRefreshing = state.refreshing
         }
         //клик на кнопку добавить пост
         binding.bottomSave.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
-        binding.buttonRetry.setOnClickListener {
-            viewModel.load()
+        binding.refresh.setOnRefreshListener {
+            viewModel.refreshPosts()
         }
+
+//        binding.buttonRetry.setOnClickListener {
+//            viewModel.load()
+//        }
 
         return binding.root
     }
