@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.PostCardLayoutFragment.Companion.idArg
 import ru.netology.nmedia.databinding.ActivityNewPostBinding
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.util.StringArg
@@ -42,6 +44,9 @@ class NewPostFragment : Fragment() {
 
         binding.bottomSave.setOnClickListener {
             viewModel.changeContentAndSave(binding.content.text.toString())
+            findNavController().navigate(
+                R.id.action_newPostFragment_to_feedFragment,
+                Bundle().apply { })
             AndroidUtils.hideKeyboard(requireView()) //убираем клавиатуру
 
        }

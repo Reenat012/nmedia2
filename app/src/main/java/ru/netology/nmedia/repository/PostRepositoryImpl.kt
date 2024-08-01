@@ -7,6 +7,9 @@ import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.NetworkError
+import ru.netology.nmedia.error.UnknownError
+import java.io.IOException
 
 class PostRepositoryImpl(
     private val postDao: PostDao
@@ -22,91 +25,132 @@ class PostRepositoryImpl(
     }
 
     override suspend fun getAll() {
-        val response = ApiService.service.getAll()
-        //если что-то пошло не так
-        if (!response.isSuccessful) {
-            throw RuntimeException(response.message())
+        try {
+            val response = ApiService.service.getAll()
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            //если все хорошо
+            val posts = response.body() ?: throw RuntimeException("Response body is null")
+
+            val entities = posts.map {
+                PostEntity.fromDto(it)
+            }
+
+            //записываем posts в базу данных
+            postDao.insert(entities)
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
         }
-
-        //если все хорошо
-        val posts = response.body() ?: throw RuntimeException("Response body is null")
-
-        val entities = posts.map {
-            PostEntity.fromDto(it)}
-
-        //записываем posts в базу данных
-        postDao.insert(entities)
     }
 
     override suspend fun likeByIdAsync(id: Long): Post {
-        val response = ApiService.service.likeById(id)
-        //если что-то пошло не так
-        if (!response.isSuccessful) {
-            throw RuntimeException(response.message())
+        try {        //модифицируем запись в локальной БД
+            postDao.likeById(id)
+
+            //отправляем запрос
+            val response = ApiService.service.likeById(id)
+
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            //если все хорошо
+            val post = response.body() ?: throw RuntimeException("Response body is null")
+
+            return post
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
         }
-
-        //если все хорошо
-        val post = response.body() ?: throw RuntimeException("Response body is null")
-
-        postDao.insert(PostEntity.fromDto(post))
-
-        return post
-
-
-
-//        val entities = posts.map {
-//            PostEntity.fromDto(it)}
-//
-//        //записываем posts в базу данных
-//        postDao.insert(entities)
     }
 
     override suspend fun disLikeByIdAsync(id: Long): Post {
-        val response = ApiService.service.dislikeById(id)
-        //если что-то пошло не так
-        if (!response.isSuccessful) {
-            throw RuntimeException(response.message())
+        try {
+            //модифицируем запись в локальной БД
+            postDao.likeById(id)
+
+            //отправляем запрос
+            val response = ApiService.service.likeById(id)
+
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            //если все хорошо
+            val post = response.body() ?: throw RuntimeException("Response body is null")
+
+            return post
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
         }
-
-        //если все хорошо
-        val post = response.body() ?: throw RuntimeException("Response body is null")
-
-        postDao.insert(PostEntity.fromDto(post))
-
-        return post
     }
 
     override suspend fun removeByIdAsync(id: Long) {
-        val response = ApiService.service.removeById(id)
-        //если что-то пошло не так
-        if (!response.isSuccessful) {
-            throw RuntimeException(response.message())
+        try {
+            //удаляем запись из локальной БД
+            postDao.removeById(id)
+
+            //отправляем запрос на удаление на сервер
+            val response = ApiService.service.removeById(id)
+
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+            //сервер нам ничего не вернет, поэтому и вставлять в post нечего
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
         }
 
-        //если все хорошо
-        val post = response.body() ?: throw RuntimeException("Response body is null")
 
-        postDao.insert(PostEntity.fromDto(post))
+
+
+//        val response = ApiService.service.removeById(id)
+//        //если что-то пошло не так
+//        if (!response.isSuccessful) {
+//            throw RuntimeException(response.message())
+//        }
+//
+//        //если все хорошо
+//        val post = response.body() ?: throw RuntimeException("Response body is null")
+//
+//        postDao.insert(PostEntity.fromDto(post))
     }
 
     override suspend fun saveAsync(post: Post): Post {
-        val response = ApiService.service.savePost(post)
+        //запись добавляется без текста
+        //кнопка сохранить пост не закрывает активити
+        try {
+            val response = ApiService.service.savePost(post)
 
-        if (!response.isSuccessful) {
-            throw RuntimeException(response.message())
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.insert(PostEntity.fromDto(body))
+
+            return body
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
         }
-
-        val body = response.body() ?: throw ApiError(response.code(), response.message())
-        postDao.insert(PostEntity.fromDto(body))
-
-        return body
     }
 
 }
-//    override fun getAll(): List<Post> {
-//        return ApiService.service.getAll()
-//            .execute()
-//            .let { it.body() ?: throw RuntimeException("body is null") }
-//    }
+
 
 
