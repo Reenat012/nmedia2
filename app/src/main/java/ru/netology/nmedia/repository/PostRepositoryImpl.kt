@@ -77,7 +77,7 @@ class PostRepositoryImpl(
             postDao.likeById(id)
 
             //отправляем запрос
-            val response = ApiService.service.likeById(id)
+            val response = ApiService.service.dislikeById(id)
 
             //если что-то пошло не так
             if (!response.isSuccessful) {

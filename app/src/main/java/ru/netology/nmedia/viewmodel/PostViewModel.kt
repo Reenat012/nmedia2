@@ -119,40 +119,22 @@ fun repost(id: Long) = repository.repost(id)
 //        }
 //    }
 
-fun likeById(id: Long) {
-    //получаем состояние likedByMe поста по id
-    viewModelScope.launch {
-        val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe
-        //если true - dislike, false - like
-        if (likedByMe == true) {
+    fun likeById(id: Long) {
+        //получаем состояние likedByMe поста по id
+        val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe ?: return
+        viewModelScope.launch {
+            //если true - dislike, false - like
             try {
-                repository.disLikeByIdAsync(id)
-                _data.postValue(_data.value?.posts?.map {
-                    if (it.id != id) it else it.copy(
-                        likedByMe = !it.likedByMe,
-                        likes = it.likes - 1
-                    )
+                if (likedByMe) {
+                    repository.disLikeByIdAsync(id)
+                } else {
+                    repository.likeByIdAsync(id)
                 }
-                    ?.let { FeedModel(posts = it) })
-            } catch (e: Exception) {
-                _state.value = FeedModelState(error = true)
-            }
-        } else {
-            try {
-                repository.likeByIdAsync(id)
-                _data.postValue(_data.value?.posts?.map {
-                    if (it.id != id) it else it.copy(
-                        likedByMe = !it.likedByMe,
-                        likes = it.likes + 1
-                    )
-                }
-                    ?.let { FeedModel(posts = it) })
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
             }
         }
     }
-}
 
 fun removeById(id: Long) {
     // Оптимистичная модель
