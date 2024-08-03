@@ -93,7 +93,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             edited.value?.let {
                 if (it.content != text.trim()) { //проверяем не равен ли существующий текст вновь введенному (trim - без учета пробелом)
-                    repository.saveAsync(it)
+                    repository.saveAsync(it.copy(content = text)) // <----
                 }
                 edited.postValue(empty) //postValue обновляем с фонового потока LiveData
             }
@@ -101,16 +101,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    //функция отмены редактирования и очистка поста
-    fun cancelEdit() {
-        edited.value = empty
-    }
 
-    fun cancelChangeContent() {
-        edited.value = empty //удаляем редактированный пост из поля для редактирования
-    }
+//функция отмены редактирования и очистка поста
+fun cancelEdit() {
+    edited.value = empty
+}
 
-    fun repost(id: Long) = repository.repost(id)
+fun cancelChangeContent() {
+    edited.value = empty //удаляем редактированный пост из поля для редактирования
+}
+
+fun repost(id: Long) = repository.repost(id)
 //    fun likeById(id: Long) {
 //        thread {
 //            repository.likeById(id)
@@ -118,66 +119,66 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //        }
 //    }
 
-    fun likeById(id: Long) {
-        //получаем состояние likedByMe поста по id
-        viewModelScope.launch {
-            val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe
-            //если true - dislike, false - like
-            if (likedByMe == true) {
-                try{
-                    repository.disLikeByIdAsync(id)
-                    _data.postValue(_data.value?.posts?.map {
-                        if (it.id != id) it else it.copy(
-                            likedByMe = !it.likedByMe,
-                            likes = it.likes - 1
-                        )
-                    }
-                        ?.let { FeedModel(posts = it) })
-                } catch (e: Exception) {
-                    throw RuntimeException(e)
-                }
-            } else {
-                try {
-                    repository.likeByIdAsync(id)
-                    _data.postValue(_data.value?.posts?.map {
-                        if (it.id != id) it else it.copy(
-                            likedByMe = !it.likedByMe,
-                            likes = it.likes + 1
-                        )
-                    }
-                        ?.let { FeedModel(posts = it) })
-                } catch (e: Exception) {
-                    throw RuntimeException(e)
-                }
-            }
-        }
-    }
-
-    fun removeById(id: Long) {
-        // Оптимистичная модель
-        viewModelScope.launch {
-            val old = _data.value?.posts.orEmpty()
-
+fun likeById(id: Long) {
+    //получаем состояние likedByMe поста по id
+    viewModelScope.launch {
+        val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe
+        //если true - dislike, false - like
+        if (likedByMe == true) {
             try {
-                repository.removeByIdAsync(id)
-                _data.postValue(_data.value?.posts?.filter { it.id != id }
+                repository.disLikeByIdAsync(id)
+                _data.postValue(_data.value?.posts?.map {
+                    if (it.id != id) it else it.copy(
+                        likedByMe = !it.likedByMe,
+                        likes = it.likes - 1
+                    )
+                }
                     ?.let { FeedModel(posts = it) })
             } catch (e: Exception) {
-                _data.postValue(_data.value?.copy(posts = old))
+                _state.value = FeedModelState(error = true)
+            }
+        } else {
+            try {
+                repository.likeByIdAsync(id)
+                _data.postValue(_data.value?.posts?.map {
+                    if (it.id != id) it else it.copy(
+                        likedByMe = !it.likedByMe,
+                        likes = it.likes + 1
+                    )
+                }
+                    ?.let { FeedModel(posts = it) })
+            } catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
             }
         }
     }
+}
 
-    fun edit(post: Post) {
-        edited.value = post //редактируемый пост записываем в LiveData edited
+fun removeById(id: Long) {
+    // Оптимистичная модель
+    viewModelScope.launch {
+        val old = _data.value?.posts.orEmpty()
+
+        try {
+            repository.removeByIdAsync(id)
+            _data.postValue(_data.value?.posts?.filter { it.id != id }
+                ?.let { FeedModel(posts = it) })
+        } catch (e: Exception) {
+            _data.postValue(_data.value?.copy(posts = old))
+        }
     }
+}
 
-    fun playVideo(post: Post) {
-        post.video
-    }
+fun edit(post: Post) {
+    edited.value = post //редактируемый пост записываем в LiveData edited
+}
 
-    fun openPost(post: Post) {
+fun playVideo(post: Post) {
+    post.video
+}
+
+fun openPost(post: Post) {
 //        repository.openPostById(post.id)
-    }
+}
 }
 

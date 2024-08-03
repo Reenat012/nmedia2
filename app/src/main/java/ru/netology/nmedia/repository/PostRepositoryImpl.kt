@@ -89,8 +89,10 @@ class PostRepositoryImpl(
 
             return post
         } catch (e: IOException) {
+            postDao.likeById(id)
             throw NetworkError
         } catch (e: Exception) {
+            postDao.likeById(id)
             throw UnknownError
         }
     }
