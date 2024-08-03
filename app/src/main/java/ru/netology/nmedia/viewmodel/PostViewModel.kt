@@ -127,6 +127,7 @@ fun repost(id: Long) = repository.repost(id)
             try {
                 if (likedByMe) {
                     repository.disLikeByIdAsync(id)
+                    //обновлять данные вручную не требуется так как они обновляются автоматически благодаря подписке к локальной базе данных
                 } else {
                     repository.likeByIdAsync(id)
                 }
@@ -143,10 +144,8 @@ fun removeById(id: Long) {
 
         try {
             repository.removeByIdAsync(id)
-            _data.postValue(_data.value?.posts?.filter { it.id != id }
-                ?.let { FeedModel(posts = it) })
         } catch (e: Exception) {
-            _data.postValue(_data.value?.copy(posts = old))
+            _state.value = FeedModelState(error = true)
         }
     }
 }

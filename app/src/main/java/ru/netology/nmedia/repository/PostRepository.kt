@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import ru.netology.nmedia.Post
 
 interface PostRepository {
+    //подписка на посты
     val data: LiveData<List<Post>>
     fun repost(id: Long)
-//    fun getAll() : List<Post>
     suspend fun getAll()
     suspend fun likeByIdAsync(id: Long) : Post
     suspend fun disLikeByIdAsync(id: Long) : Post

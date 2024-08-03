@@ -18,6 +18,7 @@ class PostRepositoryImpl(
         private const val BASE_URL = "http://10.0.2.2:9999/"
     }
 
+    //подписка на локальную БД
     override val data: LiveData<List<Post>> = postDao.getAll().map { it.map(PostEntity::toDto) }
 
     override fun repost(id: Long) {
