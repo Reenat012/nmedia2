@@ -1,258 +1,159 @@
 package ru.netology.nmedia.repository
 
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.ApiService
+import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.NetworkError
+import ru.netology.nmedia.error.UnknownError
+import java.io.IOException
 
-class PostRepositoryImpl : PostRepository {
+class PostRepositoryImpl(
+    private val postDao: PostDao
+) : PostRepository {
     companion object {
         private const val BASE_URL = "http://10.0.2.2:9999/"
     }
+
+    //подписка на локальную БД
+    override val data: LiveData<List<Post>> = postDao.getAll().map { it.map(PostEntity::toDto) }
 
     override fun repost(id: Long) {
         TODO("Not yet implemented")
     }
 
+    override suspend fun getAll() {
+        try {
+            val response = ApiService.service.getAll()
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
 
-    override fun getAll(): List<Post> {
-        return ApiService.service.getAll()
-            .execute()
-            .let { it.body() ?: throw RuntimeException("body is null") }
+            //если все хорошо
+            val posts = response.body() ?: throw RuntimeException("Response body is null")
+
+            val entities = posts.map {
+                PostEntity.fromDto(it)
+            }
+
+            //записываем posts в базу данных
+            postDao.insert(entities)
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
-    override fun getAllAsync(callback: PostRepository.NmediaAllCallback<List<Post>>) {
-        //ответ сервера
-        ApiService.service
-            .getAll()
-            .enqueue(object : Callback<List<Post>> {
-                override fun onResponse(
-                    call: Call<List<Post>>,
-                    response: retrofit2.Response<List<Post>>
-                ) {
-                    //если от сервера приходит ответ отличный от 200...299
-                    if (!response.isSuccessful) {
-                        callback.error(RuntimeException(response.message()))
-                        return
-                    }
-                    callback.onSuccess(
-                        response.body() ?: throw RuntimeException("body is null"))
-                }
+    override suspend fun likeByIdAsync(id: Long): Post {
+        try {        //модифицируем запись в локальной БД
+            postDao.likeById(id)
 
-                override fun onFailure(call: Call<List<Post>>, t: Throwable) {
-                    //преобразовываем базовый throwable к exception
-                    callback.error(Exception(t))
-                }
-            })
+            //отправляем запрос
+            val response = ApiService.service.likeById(id)
+
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            //если все хорошо
+            val post = response.body() ?: throw RuntimeException("Response body is null")
+
+            return post
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
-//    override fun likeById(id: Long): Post {
-//        val post = getPost(id)
-//
-//        //запрос на сервер
-//        val requestLike = Request.Builder()
-//            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
-//            .post("${BASE_URL}api/posts/$id/likes".toRequestBody())
-//            .build()
-//
-//        val requestDislike = Request.Builder()
-//            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
-//            .delete("${BASE_URL}api/posts/$id/likes".toRequestBody())
-//            .build()
-//
-//        //ответ сервера
-//        val response = client.newCall(
-//            if (!post.likedByMe) requestLike else requestDislike
-//        )
-//            .execute()
-//
-//        //получаем тело ответа с сервера
-//        val responseText = response.body?.string() ?: error("Response body is null")
-//
-//        //преобразуем в список постов
-//        return gson.fromJson(
-//            responseText/*откуда читаем*/,
-//            Post::class.java/*во что преобразовываем*/
-//        )
-//    }
+    override suspend fun disLikeByIdAsync(id: Long): Post {
+        try {
+            //модифицируем запись в локальной БД
+            postDao.likeById(id)
 
-    override fun likeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
-        ApiService.service
-            .likeById(id)
-            .enqueue(object : Callback<Post> {
-                override fun onResponse(
-                    call: retrofit2.Call<Post>,
-                    response: retrofit2.Response<Post>
-                ) {
-                    if (!response.isSuccessful) {
-                        callback.error(RuntimeException(response.message()))
-                        return
-                    }
-                    callback.onSuccess(response.body() ?: throw Exception("Body is null"))
-                }
+            //отправляем запрос
+            val response = ApiService.service.dislikeById(id)
 
-                override fun onFailure(call: retrofit2.Call<Post>, t: Throwable) {
-                    callback.error(Exception(t))
-                }
-            })
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
 
-//        //запрос на сервер
-//        val requestLike = Request.Builder()
-//            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
-//            .post("${BASE_URL}api/posts/$id/likes".toRequestBody())
-//            .build()
-//
-//        client.newCall(requestLike)
-//            .enqueue(object : Callback {
-//                override fun onFailure(call: Call, e: IOException) {
-//                    callback.error(e)
-//                }
-//
-//                override fun onResponse(call: Call, response: Response) {
-//                    try {
-//                        callback.onSuccess(gson.fromJson(response.body?.string(), Post::class.java))
-//                    } catch (e: Exception) {
-//                        callback.error(e)
-//                    }
-//                }
-//            })
+            //если все хорошо
+            val post = response.body() ?: throw RuntimeException("Response body is null")
+
+            return post
+        } catch (e: IOException) {
+            postDao.likeById(id)
+            throw NetworkError
+        } catch (e: Exception) {
+            postDao.likeById(id)
+            throw UnknownError
+        }
     }
 
-    override fun disLikeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
-        ApiService.service.dislikeById(id)
-            .enqueue(object :Callback<Post>{
-                override fun onResponse(
-                    call: retrofit2.Call<Post>,
-                    response: retrofit2.Response<Post>
-                ) {
-                    if (!response.isSuccessful) {
-                        callback.error(RuntimeException(response.message()))
-                        return
-                    }
-                    callback.onSuccess(response.body() ?: throw Exception("Body is null"))
-                }
+    override suspend fun removeByIdAsync(id: Long) {
+        try {
+            //удаляем запись из локальной БД
+            postDao.removeById(id)
 
-                override fun onFailure(call: retrofit2.Call<Post>, t: Throwable) {
-                    callback.error(Exception(t))
-                }
+            //отправляем запрос на удаление на сервер
+            val response = ApiService.service.removeById(id)
 
-            })
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+            //сервер нам ничего не вернет, поэтому и вставлять в post нечего
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
 
-//        //запрос на сервер
-//        val requestDisLike = Request.Builder()
-//            .url("${BASE_URL}api/posts/$id/likes") // /slow для задержки, имитируем реальный сервер
-//            .delete("${BASE_URL}api/posts/$id/likes".toRequestBody())
-//            .build()
+
+
+
+//        val response = ApiService.service.removeById(id)
+//        //если что-то пошло не так
+//        if (!response.isSuccessful) {
+//            throw RuntimeException(response.message())
+//        }
 //
-//        client.newCall(requestDisLike)
-//            .enqueue(object : Callback {
-//                override fun onFailure(call: Call, e: IOException) {
-//                    callback.error(e)
-//                }
+//        //если все хорошо
+//        val post = response.body() ?: throw RuntimeException("Response body is null")
 //
-//                override fun onResponse(call: Call, response: Response) {
-//                    try {
-//                        callback.onSuccess(gson.fromJson(response.body?.string(), Post::class.java))
-//                    } catch (e: Exception) {
-//                        callback.error(e)
-//                    }
-//                }
-//            })
+//        postDao.insert(PostEntity.fromDto(post))
     }
 
-    override fun save(post: Post): Post {
-        return ApiService.service.savePost(post)
-            .execute()
-            .let { it.body() ?: throw Exception("Body is null") }
+    override suspend fun saveAsync(post: Post): Post {
+        //запись добавляется без текста
+        //кнопка сохранить пост не закрывает активити
+        try {
+            val response = ApiService.service.savePost(post)
+
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.insert(PostEntity.fromDto(body))
+
+            return body
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
-    override fun saveAsync(post: Post, callback: PostRepository.NmediaAllCallback<Post>) {
-        return ApiService.service.savePost(post)
-            .enqueue(object :Callback<Post> {
-                override fun onResponse(
-                    call: retrofit2.Call<Post>,
-                    response: retrofit2.Response<Post>
-                ) {
-                    if (!response.isSuccessful) {
-                        callback.error(RuntimeException(response.message()))
-                        return
-                    }
-                    callback.onSuccess(response.body() ?: throw Exception("Body is null"))
-                }
-
-                override fun onFailure(call: retrofit2.Call<Post>, t: Throwable) {
-                    callback.error(Exception(t))
-                }
-
-//            })
-//        //запрос на сервер
-//        val request = Request.Builder()
-//            .url("${BASE_URL}api/posts") // /slow для задержки, имитируем реальный сервер
-//            .post(
-//                gson.toJson(post).toRequestBody(jsonType)
-//            ) //отправляем пост на сервер в ввиде json
-//            .build()
-//
-//        //ответ сервера
-//        client.newCall(request)
-//            .enqueue(object : Callback {
-//                override fun onFailure(call: Call, e: IOException) {
-//                    callback.error(e)
-//                }
-//
-//                override fun onResponse(call: Call, response: Response) {
-//                    try {
-//                        callback.onSuccess(gson.fromJson(response.body?.string(), Post::class.java))
-//                    } catch (e: Exception) {
-//                        callback.error(e)
-//                    }
-//                }
-//            })
-    })
-    }
-
-    override fun openPostById(id: Long): Post {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeById(id: Long) {
-        ApiService.service.removeById(id)
-            .execute()
-    }
-
-    override fun removeByIdAsync(id: Long, callback: PostRepository.NmediaAllCallback<Post>) {
-        ApiService.service.removeById(id)
-            .enqueue(object :Callback<Post> {
-                override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                    if (!response.isSuccessful) {
-                        callback.error(RuntimeException(response.message()))
-                        return
-                    }
-                    callback.onSuccess(response.body() ?: throw Exception("Body is null"))
-                }
-
-                override fun onFailure(call: Call<Post>, t: Throwable) {
-                    callback.error(Exception(t))
-                }
-
-
-            })
-
-//        //ответ сервера
-//        client.newCall(request)
-//            .enqueue(object : Callback {
-//                override fun onFailure(call: Call, e: IOException) {
-//                    callback.error(e)
-//                }
-//
-//                override fun onResponse(call: Call, response: Response) {
-//                    try {
-//                        callback.onSuccess(gson.fromJson(response.body?.string(), Post::class.java))
-//                    } catch (e: Exception) {
-//                        callback.error(e)
-//                    }
-//                }
-//            })
-    }
 }
+
+
+
