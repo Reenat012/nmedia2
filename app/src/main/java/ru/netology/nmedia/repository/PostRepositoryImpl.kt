@@ -2,14 +2,22 @@ package ru.netology.nmedia.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import java.io.IOException
+import kotlin.time.Duration.Companion.seconds
 
 class PostRepositoryImpl(
     private val postDao: PostDao
@@ -19,7 +27,7 @@ class PostRepositoryImpl(
     }
 
     //подписка на локальную БД
-    override val data: LiveData<List<Post>> = postDao.getAll().map { it.map(PostEntity::toDto) }
+    override val data = postDao.getAll().map { it.map(PostEntity::toDto) }
 
     override fun repost(id: Long) {
         TODO("Not yet implemented")
@@ -49,8 +57,47 @@ class PostRepositoryImpl(
         }
     }
 
+    override fun getNewer(newerId: Long): Flow<Int> = flow {
+        while (true) {
+            //замедляем процесс на 10 секунд
+            delay(10.seconds)
+
+            try {//получаем вновь сгенерированные посты
+                val postsResponse = ApiService.service.getNewer(newerId)
+
+                //пробуем взять тело постов
+                val posts = postsResponse.body().orEmpty()
+
+                //выбрасываем количество новых сообщений
+                emit(posts.size)
+
+                //вписываем сгенирированный список постов в локальную  БД
+                //полученные посты видимы теперь, когда записаны в базу
+                postDao.insert(posts.toEntity(hidden = true))
+
+            } //при попытке отменить flow
+            catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                //ignore
+            }
+        }
+    }
+
+    override fun getAllVisible() {
+        //если ответ от сервера приходит не 0, значит появились новые посты
+        //получаем посты только с локальной БД
+        postDao.getAllVisible()
+        }
+
+    override suspend fun getHiddenCount() : Flow<Int> {
+        //получаем количество скрытых постов
+        return postDao.getHiddenCount()
+    }
+
     override suspend fun likeByIdAsync(id: Long): Post {
-        try {        //модифицируем запись в локальной БД
+        try {
+            //модифицируем запись в локальной БД
             postDao.likeById(id)
 
             //отправляем запрос
@@ -118,8 +165,6 @@ class PostRepositoryImpl(
         }
 
 
-
-
 //        val response = ApiService.service.removeById(id)
 //        //если что-то пошло не так
 //        if (!response.isSuccessful) {
@@ -134,8 +179,6 @@ class PostRepositoryImpl(
     }
 
     override suspend fun saveAsync(post: Post): Post {
-        //запись добавляется без текста
-        //кнопка сохранить пост не закрывает активити
         try {
             val response = ApiService.service.savePost(post)
 

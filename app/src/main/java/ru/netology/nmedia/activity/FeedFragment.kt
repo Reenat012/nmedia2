@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,8 +16,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.R.id.tv_author
@@ -123,6 +126,25 @@ class FeedFragment : Fragment() {
 
             binding.emptyPosts.isVisible = model.empty
         }
+
+        binding.buttonNewPosts.setOnClickListener {
+                if (viewModel.countHidden != 0) {
+                    binding.buttonNewPosts.visibility = View.VISIBLE
+                    binding.buttonTop.visibility = View.VISIBLE
+
+                    viewModel.refreshPosts()
+
+                    binding.buttonNewPosts.visibility = View.GONE
+                    binding.buttonTop.visibility = View.GONE
+                }
+            }
+
+
+
+        //получаем сгенерированные сервером посты
+//        viewModel.newerCount.observe(viewLifecycleOwner) {
+//            Log.d("FeedFragment", "Newer count: $it")
+//        }
 
         viewModel.state.observe(viewLifecycleOwner) { state ->
             if (state.error) {
