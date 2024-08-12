@@ -132,7 +132,7 @@ class FeedFragment : Fragment() {
             //метод, который будет скрытые посты видимыми
             lifecycleScope.launch { viewModel.changeHiddenPosts() }
 
-            viewModel.refreshPosts()
+//            viewModel.refreshPosts()
 
             binding.buttonNewPosts.visibility = View.GONE
             binding.buttonTop.visibility = View.GONE
@@ -142,14 +142,17 @@ class FeedFragment : Fragment() {
         adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 if (positionStart == 0) {
-                    binding.buttonNewPosts.visibility = View.VISIBLE
-                    binding.buttonTop.visibility = View.VISIBLE
+
                 }
             }
         })
 
         //получаем сгенерированные сервером посты
         viewModel.newerCount.observe(viewLifecycleOwner) {
+            if (it > 0) {
+                binding.buttonNewPosts.visibility = View.VISIBLE
+                binding.buttonTop.visibility = View.VISIBLE
+            }
 //            Log.d("FeedFragment", "Newer count: $it")
 //            if (it > 0) {
 //                binding.buttonNewPosts.visibility = View.VISIBLE
