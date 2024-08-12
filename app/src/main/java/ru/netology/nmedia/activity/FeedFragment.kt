@@ -18,6 +18,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
@@ -128,23 +129,33 @@ class FeedFragment : Fragment() {
         }
 
         binding.buttonNewPosts.setOnClickListener {
-                if (viewModel.countHidden != 0) {
+            //метод, который будет скрытые посты видимыми
+            lifecycleScope.launch { viewModel.changeHiddenPosts() }
+
+            viewModel.refreshPosts()
+
+            binding.buttonNewPosts.visibility = View.GONE
+            binding.buttonTop.visibility = View.GONE
+
+        }
+
+        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                if (positionStart == 0) {
                     binding.buttonNewPosts.visibility = View.VISIBLE
                     binding.buttonTop.visibility = View.VISIBLE
-
-                    viewModel.refreshPosts()
-
-                    binding.buttonNewPosts.visibility = View.GONE
-                    binding.buttonTop.visibility = View.GONE
                 }
             }
-
-
+        })
 
         //получаем сгенерированные сервером посты
-//        viewModel.newerCount.observe(viewLifecycleOwner) {
+        viewModel.newerCount.observe(viewLifecycleOwner) {
 //            Log.d("FeedFragment", "Newer count: $it")
-//        }
+//            if (it > 0) {
+//                binding.buttonNewPosts.visibility = View.VISIBLE
+//                binding.buttonTop.visibility = View.VISIBLE
+//            }
+        }
 
         viewModel.state.observe(viewLifecycleOwner) { state ->
             if (state.error) {
@@ -153,7 +164,7 @@ class FeedFragment : Fragment() {
                         viewModel.load()
                     }
                     .show()
-        }
+            }
             binding.progressBar.isVisible = state.loading
             binding.refresh.isRefreshing = state.refreshing
         }
@@ -172,7 +183,9 @@ class FeedFragment : Fragment() {
 
         return binding.root
     }
+
 }
+
 
 
 

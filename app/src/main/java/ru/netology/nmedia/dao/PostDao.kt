@@ -19,6 +19,12 @@ interface PostDao {
     @Query("SELECT COUNT(*) FROM PostEntity WHERE hidden = 1")
     fun getHiddenCount(): Flow<Int>
 
+    @Query("""
+        UPDATE PostEntity
+        SET hidden = CASE WHEN hidden = 1 THEN 0 ELSE hidden END
+        """)
+    suspend fun changeHiddenPosts()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(post: PostEntity)
 

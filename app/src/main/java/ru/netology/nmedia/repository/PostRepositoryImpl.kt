@@ -26,8 +26,8 @@ class PostRepositoryImpl(
         private const val BASE_URL = "http://10.0.2.2:9999/"
     }
 
-    //подписка на локальную БД
-    override val data = postDao.getAll().map { it.map(PostEntity::toDto) }
+    //подписка на локальную БД с видимыми постами
+    override val data = postDao.getAllVisible().map { it.map(PostEntity::toDto) }
 
     override fun repost(id: Long) {
         TODO("Not yet implemented")
@@ -93,6 +93,10 @@ class PostRepositoryImpl(
     override suspend fun getHiddenCount() : Flow<Int> {
         //получаем количество скрытых постов
         return postDao.getHiddenCount()
+    }
+
+    override suspend fun changeHiddenPosts() {
+        postDao.changeHiddenPosts()
     }
 
     override suspend fun likeByIdAsync(id: Long): Post {

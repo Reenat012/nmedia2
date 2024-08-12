@@ -85,6 +85,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    suspend fun changeHiddenPosts() {
+        repository.changeHiddenPosts()
+    }
+
     fun refreshPosts() {
         //создаем корутину
         viewModelScope.launch {
