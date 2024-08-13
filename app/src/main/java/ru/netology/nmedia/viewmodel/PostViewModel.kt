@@ -4,8 +4,14 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.db.AppDb
@@ -32,10 +38,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val state: LiveData<FeedModelState>
         get() = _state
 
+    //переменная для подсчета скрытых новых постов
+    var countHidden = 0
+
     //неизменяемое состояние экрана
     val data: LiveData<FeedModel> = repository.data.map {
         FeedModel(posts = it, empty = it.isEmpty())
     }
+        .asLiveData(Dispatchers.Default) //получаем LiveData из Flow на дефолтном потоке, потому что мапинг не требует ожидания
 
     private val _data = MutableLiveData<FeedModel>()
 
@@ -43,23 +53,40 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
+    //подписка на количество новых постов
+    val newerCount: LiveData<Int> = data.switchMap {
+        repository.getNewer(it.posts.firstOrNull()?.id ?: 0L)
+            .asLiveData(Dispatchers.Default)
+    }
+
     fun load() {
         viewModelScope.launch {
             //создаем фоновый поток
             //вызываем значок загрузки
             //postValue безопасный метод в фоновом потоке вместо value, безопасно пробрасывает результат на основной поток MainThread
-            _state.postValue(FeedModelState(loading = true))
+            _state.postValue(FeedModelState())
 
             _state.value = try {
-                repository.getAll()
+                //получаем только посты сохраненные в локальной БД
+                repository.getAllVisible()
                 //если все хорошо, все флаги выключены
                 FeedModelState()
             } catch (e: Exception) {
                 //если ошибка, выбрасываем предупреждение
                 FeedModelState(error = true)
             }
-
         }
+    }
+
+    fun getHiddenCount() {
+        viewModelScope.launch {
+            //обновляем переменную count числом новых постов
+            countHidden = repository.getHiddenCount().firstOrNull() ?: 0
+        }
+    }
+
+    suspend fun changeHiddenPosts() {
+        repository.changeHiddenPosts()
     }
 
     fun refreshPosts() {
@@ -101,17 +128,16 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
+    //функция отмены редактирования и очистка поста
+    fun cancelEdit() {
+        edited.value = empty
+    }
 
-//функция отмены редактирования и очистка поста
-fun cancelEdit() {
-    edited.value = empty
-}
+    fun cancelChangeContent() {
+        edited.value = empty //удаляем редактированный пост из поля для редактирования
+    }
 
-fun cancelChangeContent() {
-    edited.value = empty //удаляем редактированный пост из поля для редактирования
-}
-
-fun repost(id: Long) = repository.repost(id)
+    fun repost(id: Long) = repository.repost(id)
 //    fun likeById(id: Long) {
 //        thread {
 //            repository.likeById(id)
@@ -137,29 +163,29 @@ fun repost(id: Long) = repository.repost(id)
         }
     }
 
-fun removeById(id: Long) {
-    // Оптимистичная модель
-    viewModelScope.launch {
-        val old = _data.value?.posts.orEmpty()
+    fun removeById(id: Long) {
+        // Оптимистичная модель
+        viewModelScope.launch {
+            val old = _data.value?.posts.orEmpty()
 
-        try {
-            repository.removeByIdAsync(id)
-        } catch (e: Exception) {
-            _state.value = FeedModelState(error = true)
+            try {
+                repository.removeByIdAsync(id)
+            } catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
+            }
         }
     }
-}
 
-fun edit(post: Post) {
-    edited.value = post //редактируемый пост записываем в LiveData edited
-}
+    fun edit(post: Post) {
+        edited.value = post //редактируемый пост записываем в LiveData edited
+    }
 
-fun playVideo(post: Post) {
-    post.video
-}
+    fun playVideo(post: Post) {
+        post.video
+    }
 
-fun openPost(post: Post) {
+    fun openPost(post: Post) {
 //        repository.openPostById(post.id)
-}
+    }
 }
 

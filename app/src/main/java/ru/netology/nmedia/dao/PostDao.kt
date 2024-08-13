@@ -5,12 +5,25 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.entity.PostEntity
 
 @Dao
 interface PostDao {
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
-    fun getAll(): LiveData<List<PostEntity>>
+    fun getAll(): Flow<List<PostEntity>>
+
+    @Query("SELECT * FROM PostEntity WHERE hidden = 0 ORDER BY id DESC")
+    fun getAllVisible(): Flow<List<PostEntity>>
+
+    @Query("SELECT COUNT(*) FROM PostEntity WHERE hidden = 1")
+    fun getHiddenCount(): Flow<Int>
+
+    @Query("""
+        UPDATE PostEntity
+        SET hidden = CASE WHEN hidden = 1 THEN 0 ELSE hidden END
+        """)
+    suspend fun changeHiddenPosts()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(post: PostEntity)
