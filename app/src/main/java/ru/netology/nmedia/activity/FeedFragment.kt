@@ -182,7 +182,7 @@ class FeedFragment : Fragment() {
 
 //        binding.buttonRetry.setOnClickListener {
 //            viewModel.load()
-//        }
+//        }//
 
         return binding.root
     }
