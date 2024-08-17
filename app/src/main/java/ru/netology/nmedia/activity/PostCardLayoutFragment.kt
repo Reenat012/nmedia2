@@ -115,6 +115,10 @@ class PostCardLayoutFragment : Fragment() {
             .load(postViewModel.photo.value?.uri)
             .into(binding.photoIv)
 
+        binding.photoIv.setOnClickListener {
+            findNavController().navigate(R.id.action_feedFragment_to_viewPhotoFragment)
+        }
+
         binding.videoView.setOnClickListener {
             //получаем ссылку
             val url = Uri.parse(binding.tvVideoPublished.toString())
