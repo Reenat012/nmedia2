@@ -1,5 +1,6 @@
 package ru.netology.nmedia
 
+import android.net.Uri
 import ru.netology.nmedia.enumeration.AttachmentType
 
 data class Post(
@@ -14,7 +15,8 @@ data class Post(
     val views: Int = 0,
     val countReposts: Int = 0,
     val video: String? = null, //необязательное поле, если пользователь добавит ссылку на видео
-    var attachment: Attachment? = null
+    var attachment: Attachment? = null,
+    val photoPost: String? = null
 )
 
 data class Attachment(

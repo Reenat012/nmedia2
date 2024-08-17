@@ -31,6 +31,7 @@ class PostCardLayoutFragment : Fragment() {
     companion object {
         var Bundle.idArg: Long by LongArg
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -112,6 +113,7 @@ class PostCardLayoutFragment : Fragment() {
 
         //получаем изображение с сервера и присваиваем его photo_iv
         Glide.with(this)
+            //получаем последнее значение uri
             .load(postViewModel.photo.value?.uri)
             .into(binding.photoIv)
 

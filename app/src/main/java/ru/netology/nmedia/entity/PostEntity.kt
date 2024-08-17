@@ -1,5 +1,6 @@
 package ru.netology.nmedia.entity
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.room.Embedded
 import androidx.room.Entity

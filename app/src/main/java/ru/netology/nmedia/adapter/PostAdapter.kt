@@ -57,7 +57,7 @@ class PostViewHolder(
     @SuppressLint("QueryPermissionsNeeded")
     fun bind(post: Post) =
         binding.apply {
-            post.authorAvatar?.let { ivAvatar.load(it) } //присваиваем новую аватарку
+            post.authorAvatar.let { ivAvatar.load("http://10.0.2.2:9999/avatars/$it") } //присваиваем новую аватарку
             tvAuthor.text = post.author
             tvPublished.text = post.published
             tvContent.text = post.content
@@ -66,6 +66,7 @@ class PostViewHolder(
             //текст будет записываться в атрибут text MaterialButton
             ivLikes.text = service.amount(post.likes)
             ivRepost.text = service.amount(post.reposts)
+
 
             ivLikes.setOnClickListener {
                 onLInteractionListener.onLike(post)
