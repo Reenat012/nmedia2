@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.FeedFragment.Companion.textArg
@@ -103,10 +104,16 @@ class PostCardLayoutFragment : Fragment() {
             viewHolder.bind(post)
         }
 
+        //проверяем есть ли фото на сервере
+        if (postViewModel.photo.value != null) {
+            //если есть делаем видимой photo_iv
+            binding.photoIv.visibility = View.VISIBLE
+        }
 
-
-
-
+        //получаем изображение с сервера и присваиваем его photo_iv
+        Glide.with(this)
+            .load(postViewModel.photo.value?.uri)
+            .into(binding.photoIv)
 
         binding.videoView.setOnClickListener {
             //получаем ссылку

@@ -8,14 +8,20 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import ru.netology.nmedia.Attachment
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.enumeration.AttachmentType
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
+import ru.netology.nmedia.model.ModelPhoto
 import java.io.IOException
 import kotlin.time.Duration.Companion.seconds
 
@@ -88,9 +94,9 @@ class PostRepositoryImpl(
         //если ответ от сервера приходит не 0, значит появились новые посты
         //получаем посты только с локальной БД
         postDao.getAllVisible()
-        }
+    }
 
-    override suspend fun getHiddenCount() : Flow<Int> {
+    override suspend fun getHiddenCount(): Flow<Int> {
         //получаем количество скрытых постов
         return postDao.getHiddenCount()
     }
@@ -199,6 +205,40 @@ class PostRepositoryImpl(
         } catch (e: Exception) {
             throw UnknownError
         }
+    }
+
+    override suspend fun saveWithAttachment(post: Post, photo: ModelPhoto) {
+        //загружаем фото на сервер
+        val media = upload(photo)
+
+        //сохраняем пост с Attachment
+        val postWithAttachment = try {
+            post.copy(attachment = Attachment(media.id, AttachmentType.IMAGE))
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+
+        //отправляем пост на сервер
+        saveAsync(postWithAttachment)
+    }
+
+    private suspend fun upload(photo: ModelPhoto): Media {
+        val uploadResponse = ApiService.service.upload(
+            MultipartBody.Part.createFormData("file", photo.file.name, photo.file.asRequestBody())
+        )
+
+        //проверяем на соответствие ожидаемому
+        if (!uploadResponse.isSuccessful) {
+            throw RuntimeException(uploadResponse.message())
+        }
+
+        //елси все хорошо, возвращаем тело запроса
+        return uploadResponse.body() ?: throw ApiError(
+            uploadResponse.code(),
+            uploadResponse.message()
+        )
     }
 
 }

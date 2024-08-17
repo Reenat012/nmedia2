@@ -5,5 +5,7 @@
 
     <string name="remove">Удалить</string>
     <string name="save">Сохранить</string>
+    <string name="save_menu">Сохранить</string>
+    <string name="clear">Очистить</string>
 
 </resources>

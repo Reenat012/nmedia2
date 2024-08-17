@@ -173,4 +173,14 @@
         android:visibility="gone"
         app:constraint_referenced_ids="button_play, video_view, tv_video_published, tv_video_views"></androidx.constraintlayout.widget.Group>
 
+    <ImageView
+        android:id="@+id/photo_iv"
+        app:layout_constraintTop_toBottomOf="@id/tv_published"
+        android:layout_marginTop="@dimen/margin_photo_iv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/barrier_bottom"
+        android:layout_marginBottom="@dimen/margin_photo_iv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
