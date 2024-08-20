@@ -112,14 +112,12 @@ class PostCardLayoutFragment : Fragment() {
         }
 
         //получаем изображение с сервера и присваиваем его photo_iv
-        Glide.with(this)
-            //получаем последнее значение uri
-            .load(postViewModel.photo.value?.uri)
-            .into(binding.photoIv)
+//        Glide.with(this)
+//            //получаем последнее значение uri
+//            .load("http://10.0.2.2:9999/media/${post.attachment?.url}")
+//            .into(binding.photoIv)
 
-        binding.photoIv.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_viewPhotoFragment)
-        }
+
 
         binding.videoView.setOnClickListener {
             //получаем ссылку

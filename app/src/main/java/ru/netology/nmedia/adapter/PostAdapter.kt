@@ -1,17 +1,32 @@
 package ru.netology.nmedia.adapter
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
+import androidx.navigation.Navigation.findNavController
+
+import androidx.navigation.findNavController
+
+
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.WallService
+import ru.netology.nmedia.activity.FeedFragment
+import ru.netology.nmedia.activity.PostCardLayoutFragment
+import ru.netology.nmedia.activity.ViewPhotoFragment
 import ru.netology.nmedia.databinding.ActivityPostCardLayoutBinding
+import ru.netology.nmedia.enumeration.AttachmentType
 import ru.netology.nmedia.load
 
 interface OnInteractionListener {
@@ -58,6 +73,12 @@ class PostViewHolder(
     fun bind(post: Post) =
         binding.apply {
             post.authorAvatar.let { ivAvatar.load("http://10.0.2.2:9999/avatars/$it") } //присваиваем новую аватарку
+            post.photoPost.let {
+                photoIv.load("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                if (post.attachment != null) {
+                    binding.photoIv.visibility = View.VISIBLE
+                }
+            }
             tvAuthor.text = post.author
             tvPublished.text = post.published
             tvContent.text = post.content
@@ -126,6 +147,14 @@ class PostViewHolder(
             //клик на контент -> перходим в отдельный пост
             tvContent.setOnClickListener {
                 onLInteractionListener.openPost(post)
+            }
+
+            binding.photoIv.isClickable = true
+            binding.photoIv.setOnClickListener {
+                val uriPhoto = Uri.parse("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                findNavController(binding.photoIv).navigate(R.id.action_feedFragment_to_viewPhotoFragment,
+                    bundleOf("uriKey" to uriPhoto) //передаем uri изображения с помощью ключа
+                )
             }
         }
 }

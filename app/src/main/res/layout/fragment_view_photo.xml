@@ -3,11 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.ViewPhotoFragment">
+    tools:context=".activity.ViewPhotoFragment"
+    android:background="@color/black">
 
 <ImageView
     android:id="@+id/photo_view_iv"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"></ImageView>
+    android:layout_width="410dp"
+    android:layout_height="410dp"
+    android:layout_gravity="center"
+    ></ImageView>
 
 </FrameLayout>
