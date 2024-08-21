@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_feedFragment_to_postCardLayoutFragment"
             app:destination="@id/postCardLayoutFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_viewPhotoFragment"
+            app:destination="@id/viewPhotoFragment" />
     </fragment>
 
     <fragment
@@ -35,6 +38,11 @@
             android:id="@+id/action_postCardLayoutFragment_to_newPostFragment"
             app:destination="@id/newPostFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/viewPhotoFragment"
+        android:name="ru.netology.nmedia.activity.ViewPhotoFragment"
+        android:label="fragment_view_photo"
+        tools:layout="@layout/fragment_view_photo" />
 
 
 </navigation>

@@ -3,6 +3,7 @@ package ru.netology.nmedia.repository
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.PostApiService
+import ru.netology.nmedia.model.ModelPhoto
 
 interface PostRepository {
     //подписка на посты
@@ -19,6 +20,7 @@ interface PostRepository {
     suspend fun removeByIdAsync(id: Long)
 //    fun save(post: Post): Post
     suspend fun saveAsync(post: Post) : Post
+    suspend fun saveWithAttachment(post: Post, photo: ModelPhoto)
 //    fun openPostById(id: Long): Post
 }
 

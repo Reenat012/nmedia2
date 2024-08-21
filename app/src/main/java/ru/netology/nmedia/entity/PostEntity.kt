@@ -1,7 +1,12 @@
 package ru.netology.nmedia.entity
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import okhttp3.internal.ignoreIoExceptions
+import ru.netology.nmedia.Attachment
 import ru.netology.nmedia.Post
 
 @Entity
@@ -14,14 +19,36 @@ data class PostEntity(
     val published: String,
     val likedByMe: Boolean,
     val likes: Int = 0,
-    val hidden: Boolean = false //свойство для сгенерированных записей
+    val hidden: Boolean = false, //свойство для сгенерированных записей
+    @Embedded
+    val attachment: AttachementEmbedded?
 ) {
-    fun toDto() = Post(id, author, authorAvatar, content, published, likedByMe, likes)
+    fun toDto() = Post(
+        id = id,
+        author = author,
+        authorAvatar = authorAvatar,
+        content = content,
+        published = published,
+        likedByMe = likedByMe,
+        likes = likes,
+        attachment = attachment?.toDto()
+    )
 
     companion object {
         fun fromDto(dto: Post, hidden: Boolean = false) =
-            PostEntity(dto.id, dto.author, dto.authorAvatar, dto.content, dto.published, dto.likedByMe, dto.likes, hidden)
-
+            PostEntity(
+                id = dto.id,
+                author = dto.author,
+                authorAvatar = dto.authorAvatar,
+                content = dto.content,
+                published = dto.published,
+                likedByMe = dto.likedByMe,
+                likes = dto.likes,
+                hidden = hidden,
+                attachment = dto.attachment?.let {
+                    AttachementEmbedded.fromDto(it)
+                }
+            )
     }
 }
 

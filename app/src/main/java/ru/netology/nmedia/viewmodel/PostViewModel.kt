@@ -1,6 +1,9 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.graphics.ColorSpace.Model
+import android.net.Uri
+import android.view.Display.Mode
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,9 +20,11 @@ import ru.netology.nmedia.Post
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.ModelPhoto
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
+import java.io.File
 
 private val empty = Post(
     id = 0,
@@ -57,6 +62,19 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val newerCount: LiveData<Int> = data.switchMap {
         repository.getNewer(it.posts.firstOrNull()?.id ?: 0L)
             .asLiveData(Dispatchers.Default)
+    }
+
+    //сохраняем фото в переменную
+    private val _photo = MutableLiveData<ModelPhoto?>(null)
+    val photo: LiveData<ModelPhoto?>
+        get() = _photo
+
+    fun setPhoto(uri: Uri, file: File) {
+        _photo.value = ModelPhoto(uri, file)
+    }
+
+    fun clearPhoto() {
+        _photo.value = null
     }
 
     fun load() {
@@ -118,11 +136,33 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun changeContentAndSave(text: String) {
         viewModelScope.launch {
-            edited.value?.let {
-                if (it.content != text.trim()) { //проверяем не равен ли существующий текст вновь введенному (trim - без учета пробелом)
-                    repository.saveAsync(it.copy(content = text)) // <----
+            edited.value?.let { post ->
+                try {
+                    //если текст не равен существующему
+                    //добавлено фото
+                    if (post.content != text.trim() && _photo.value != null) {
+                        _photo.value?.let {
+                            repository.saveWithAttachment(post.copy(content = text), it)
+                        }
+                    }
+                    //если текст равен существующему(т.е. его не надо менять)
+                    //добавлено фото
+                    else if (post.content == text.trim() && _photo.value != null) {
+                        _photo.value?.let {
+                            repository.saveWithAttachment(post, it)
+                        }
+                    }
+                    //если текст не равен существующему
+                    //фото не добавлено
+                    else if (post.content != text.trim() && _photo.value == null) {
+                        repository.saveAsync(post.copy(content = text))
+                    }
+
+                    //postValue обновляем с фонового потока LiveData}
+                    edited.postValue(empty)
+                } catch (e: Exception) {
+                    _state.value = FeedModelState(error = true)
                 }
-                edited.postValue(empty) //postValue обновляем с фонового потока LiveData
             }
         }
     }
