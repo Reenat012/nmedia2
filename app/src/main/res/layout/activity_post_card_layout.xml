@@ -14,6 +14,7 @@
         android:layout_height="300dp"
         android:layout_marginBottom="@dimen/margin_photo_iv"
         android:visibility="gone"
+        android:background="@color/white"
         android:layout_marginTop="@dimen/margin_photo_iv"
         app:layout_constraintBottom_toBottomOf="@id/barrier_bottom"
         app:layout_constraintTop_toBottomOf="@+id/tv_content" />

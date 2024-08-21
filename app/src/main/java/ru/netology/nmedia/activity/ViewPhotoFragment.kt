@@ -13,6 +13,7 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.ActivityPostCardLayoutBinding
 import ru.netology.nmedia.databinding.FragmentViewPhotoBinding
 import ru.netology.nmedia.load
+import ru.netology.nmedia.loadWithoutCircle
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class ViewPhotoFragment : Fragment() {
@@ -42,7 +43,7 @@ class ViewPhotoFragment : Fragment() {
         }
 
         //показываем фото
-        binding.photoViewIv.load(uri.toString())
+        binding.photoViewIv.loadWithoutCircle(uri.toString())
 
         return binding.root
     }

@@ -138,18 +138,26 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             edited.value?.let { post ->
                 try {
-
-
-                    //проверяем что записано в _photo
-                    _photo.value?.let {
-                        //если там значение
-                        //проверяем не равен ли существующий текст вновь введенному (trim - без учета пробелом)
-                        if (post.content != text.trim()) {
+                    //если текст не равен существующему
+                    //добавлено фото
+                    if (post.content != text.trim() && _photo.value != null) {
+                        _photo.value?.let {
                             repository.saveWithAttachment(post.copy(content = text), it)
-                        } else {
+                        }
+                    }
+                    //если текст равен существующему(т.е. его не надо менять)
+                    //добавлено фото
+                    else if (post.content == text.trim() && _photo.value != null) {
+                        _photo.value?.let {
                             repository.saveWithAttachment(post, it)
                         }
                     }
+                    //если текст не равен существующему
+                    //фото не добавлено
+                    else if (post.content != text.trim() && _photo.value == null) {
+                        repository.saveAsync(post.copy(content = text))
+                    }
+
                     //postValue обновляем с фонового потока LiveData}
                     edited.postValue(empty)
                 } catch (e: Exception) {

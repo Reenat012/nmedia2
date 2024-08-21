@@ -11,12 +11,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.Group
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -114,6 +116,14 @@ class FeedFragment : Fragment() {
                 findNavController().navigate(
                     R.id.action_feedFragment_to_postCardLayoutFragment,
                     Bundle().also { it.idArg = post.id })
+            }
+
+            override fun openImage(post: Post) {
+                val uriPhoto = Uri.parse("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_viewPhotoFragment,
+                    bundleOf("uriKey" to uriPhoto) //передаем uri изображения с помощью ключа
+                )
             }
         })
 
