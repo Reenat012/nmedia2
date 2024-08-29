@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -80,6 +81,8 @@ class PostViewHolder(
             //текст будет записываться в атрибут text MaterialButton
             ivLikes.text = service.amount(post.likes)
             ivRepost.text = service.amount(post.reposts)
+
+            ivMenu.isVisible = post.ownedByMe
 
 
             ivLikes.setOnClickListener {

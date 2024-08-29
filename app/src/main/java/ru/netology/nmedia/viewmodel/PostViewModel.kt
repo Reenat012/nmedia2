@@ -14,9 +14,11 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
@@ -32,7 +34,8 @@ private val empty = Post(
     author = "",
     authorAvatar = "http://10.0.2.2:9999/avatars/netology.jpg",
     likedByMe = false,
-    published = ""
+    published = "",
+    authorId = 0
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -47,10 +50,22 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     var countHidden = 0
 
     //неизменяемое состояние экрана
-    val data: LiveData<FeedModel> = repository.data.map {
-        FeedModel(posts = it, empty = it.isEmpty())
+    val data: LiveData<FeedModel> =
+        //впервую очередь смотрим на данные авторизации
+        AppAuth.getInstanse().data.flatMapLatest { token ->
+        val myId = token?.id
+
+            //читаем базу данных
+        repository.data.map { posts ->
+            FeedModel(
+                posts.map {
+                    it.copy(ownedByMe = it.authorId == myId)
+                }, empty = posts.isEmpty()
+            )
+        }
     }
         .asLiveData(Dispatchers.Default) //получаем LiveData из Flow на дефолтном потоке, потому что мапинг не требует ожидания
+
 
     private val _data = MutableLiveData<FeedModel>()
 

@@ -3,6 +3,8 @@ package ru.netology.nmedia.auth
 import android.content.Context
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import ru.netology.nmedia.dto.Token
 
 class AppAuth private constructor(context: Context) {
@@ -10,6 +12,8 @@ class AppAuth private constructor(context: Context) {
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     //хранилище данных
     private val _data = MutableStateFlow<Token?>(null)
+    //публичная ссылка на данные
+    val data: StateFlow<Token?> = _data.asStateFlow()
 
     init {
         //считываем id и token
@@ -50,13 +54,15 @@ class AppAuth private constructor(context: Context) {
         private const val ID_KEY = "ID_KEY"
         private const val TOKEN_KEY = "TOKEN_KEY"
         private var appAuth: AppAuth? = null
+
+        fun init(context: Context) {
+            appAuth = AppAuth(context)
+        }
+
+        fun getInstanse() = appAuth ?: error("Need call init(context) before")
     }
 
-    fun init(context: Context) {
-        appAuth = AppAuth(context)
-    }
 
-    fun getInstanse() = appAuth ?: error("Need call init(context) before")
 
 
 }
