@@ -8,7 +8,6 @@ import java.io.IOException
 
 class AuthRepositoryImpl : AuthRepository {
 
-
     override suspend fun auth(login: String, password: String) {
         try {
             val response = ApiServiceUser.service.updateUser(login, password)
@@ -18,7 +17,9 @@ class AuthRepositoryImpl : AuthRepository {
                 throw RuntimeException(response.message())
             }
 
-            val user = response.body() ?: throw RuntimeException("Response body is null")
+            val answer = response.body() ?: throw RuntimeException("Response body is null")
+
+            AppAuth.getInstanse().setAuth(answer.id, answer.token)
 
         } catch (e: IOException) {
             throw NetworkError

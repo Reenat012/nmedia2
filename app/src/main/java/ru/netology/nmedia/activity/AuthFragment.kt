@@ -8,11 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityNewPostBinding
 import ru.netology.nmedia.databinding.FragmentAuthBinding
 import ru.netology.nmedia.repository.AuthRepositoryImpl
 import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.util.TextCallback
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.LoginViewModel
 import kotlin.math.log
 
@@ -25,7 +27,8 @@ class AuthFragment : Fragment(), TextCallback {
         val authRepositoryImpl: AuthRepositoryImpl = AuthRepositoryImpl()
     }
 
-    private val viewModel: LoginViewModel by viewModels()
+    private val loginViewModel: LoginViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,10 +49,10 @@ class AuthFragment : Fragment(), TextCallback {
 
         binding.signInButton.setOnClickListener {
             //пробрасываем логин и пароль во authViewModel
-            onLoginReceived(binding.textLogin.text.toString())
-            onPasswordReceived(binding.textPassword.text.toString())
+            onLoginReceived(binding.login.text.toString())
+            onPasswordReceived(binding.password.text.toString())
 
-            viewModel.onLoginTap()
+            loginViewModel.onLoginTap()
 
             //переходим обратно в feedFragment
             findNavController().navigate(
@@ -61,11 +64,11 @@ class AuthFragment : Fragment(), TextCallback {
     }
 
     override fun onLoginReceived(login: String) {
-        viewModel.saveLogin(login)
+        loginViewModel.saveLogin(login)
     }
 
     override fun onPasswordReceived(password: String) {
-        viewModel.savePassword(password)
+        loginViewModel.savePassword(password)
     }
 
 

@@ -88,8 +88,6 @@ class IntentHandlerActivity : AppCompatActivity() {
                             findNavController(R.id.nav_host_fragment).navigate(
                                 R.id.action_feedFragment_to_authFragment
                             )
-
-                            viewModel.authData.value?.let { AppAuth.getInstanse().setAuth(it.id, it.token) }
                             true
                         }
 

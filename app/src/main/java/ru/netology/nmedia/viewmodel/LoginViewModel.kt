@@ -35,12 +35,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
             try {
                 authRepository.auth(login, password)
+
                 FeedModelState()
             } catch (e: Exception) {
                 FeedModelState(error = true)
             }
         }
     }
-
-
 }
