@@ -9,11 +9,16 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
+import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentRegistrationBinding
+import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.util.TextCallback
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.RegistrationViewModel
 
 class RegistrationFragment : Fragment(), TextCallback {
@@ -23,6 +28,7 @@ class RegistrationFragment : Fragment(), TextCallback {
     }
 
     private val viewModel: RegistrationViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,9 +58,6 @@ class RegistrationFragment : Fragment(), TextCallback {
             //проверяем заполнены ли все поля регистрации
             if (viewModel.checkFieldRegister() && viewModel.checkPassword()) {
                 viewModel.onSignUpTap()
-                findNavController().navigate(
-                    R.id.action_registrationFragment_to_feedFragment
-                )
             } else if (!viewModel.checkFieldRegister() && viewModel.checkPassword()) {
                 Toast.makeText(requireContext(), R.string.field_empty, Toast.LENGTH_SHORT)
                     .show()
@@ -69,7 +72,29 @@ class RegistrationFragment : Fragment(), TextCallback {
                 )
                     .show()
             }
+        }
 
+        //подписываем на хранилище токинов, как только там появится новый токен переходим в feedfragment
+        authViewModel.authData.observe(viewLifecycleOwner) {
+            if (it != null) {
+                binding.progressBar.visibility = View.GONE
+                findNavController().navigate(
+                    R.id.action_registrationFragment_to_feedFragment
+                )
+            }
+        }
+
+        viewModel.progressRegister.observe(viewLifecycleOwner) {
+            if (it != null) {
+                binding.progressBar.visibility = View.VISIBLE
+            }
+        }
+
+        viewModel.errorEvent.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Snackbar.make(binding.root, R.string.network_error, Snackbar.LENGTH_SHORT)
+                    .show()
+            }
         }
 
         //создаем лаунчер для интента фото

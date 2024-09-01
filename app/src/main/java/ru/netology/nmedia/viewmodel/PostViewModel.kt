@@ -46,8 +46,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     var countHidden = 0
 
     //добавляем навигацию во viewModel
-    private val _navigateFeedFragmentToProposalFragment = MutableLiveData<Boolean>()
-    val navigateFeedFragmentToProposalFragment: LiveData<Boolean> =
+    private val _navigateFeedFragmentToProposalFragment = SingleLiveEvent<Unit>()
+    val navigateFeedFragmentToProposalFragment: SingleLiveEvent<Unit> =
         _navigateFeedFragmentToProposalFragment
 
 
@@ -225,7 +225,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
         } else {
             //инициируем переход
-            _navigateFeedFragmentToProposalFragment.value = true
+            _navigateFeedFragmentToProposalFragment.postValue(Unit)
         }
     }
 

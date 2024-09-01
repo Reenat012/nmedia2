@@ -10,6 +10,7 @@ import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.ModelPhoto
 import ru.netology.nmedia.repositoryImpl.AuthRepositoryImpl
 import ru.netology.nmedia.repositoryImpl.RegistrationRepositoryImpl
+import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
 
 class RegistrationViewModel : ViewModel() {
@@ -24,6 +25,12 @@ class RegistrationViewModel : ViewModel() {
     private val _photo = MutableLiveData<ModelPhoto?>(null)
     val photo: LiveData<ModelPhoto?>
         get() = _photo
+
+    private val _progressRegister = SingleLiveEvent<Unit>()
+    val progressRegister: SingleLiveEvent<Unit> = _progressRegister
+
+    private val _errorEvent = SingleLiveEvent<String>()
+    val errorEvent: SingleLiveEvent<String> = _errorEvent
 
     fun setPhoto(uri: Uri, file: File) {
         _photo.value = ModelPhoto(uri, file)
@@ -50,32 +57,31 @@ class RegistrationViewModel : ViewModel() {
     }
 
     //проверка на заполненность всех полей регистрации
-    fun checkFieldRegister() : Boolean {
+    fun checkFieldRegister(): Boolean {
         return ((name != null && name != "")
                 && (login != null && login != "")
                 && (password != null && password != "")
-                &&(retryPassword != null && retryPassword != ""))
+                && (retryPassword != null && retryPassword != ""))
     }
 
     //проверка на совпадение password и retryPassword
-    fun checkPassword() : Boolean {
+    fun checkPassword(): Boolean {
         return password == retryPassword
     }
 
     fun onSignUpTap() {
         viewModelScope.launch {
-
-            FeedModelState(loading = true)
-
+            _progressRegister.postValue(Unit)
             try {
-                photo.value?.let {
-                    registerRepository.registerUser(login, password, name, it)
+                if (photo.value != null) {
+                    photo.value?.let {
+                        registerRepository.registerUserWithPhoto(login, password, name, it)
+                    }
+                } else {
+                    registerRepository.registerUser(login, password, name)
                 }
-
-
-                FeedModelState()
             } catch (e: Exception) {
-                FeedModelState(error = true)
+                _errorEvent.postValue("Ошибка")
             }
         }
     }

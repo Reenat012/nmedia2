@@ -6,7 +6,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentAuthBinding
 import ru.netology.nmedia.repositoryImpl.AuthRepositoryImpl
@@ -50,11 +52,28 @@ class AuthFragment : Fragment(), TextCallback {
             onPasswordReceived(binding.password.text.toString())
 
             loginViewModel.onLoginTap()
+        }
 
-            //переходим обратно в feedFragment
-            findNavController().navigate(
-                R.id.action_authFragment_to_feedFragment
-            )
+        authViewModel.authData.observe(viewLifecycleOwner) { // <---
+            if (it!= null) {
+                binding.progressBar.visibility = View.GONE
+                //переходим обратно в feedFragment
+                findNavController().navigate(
+                    R.id.action_authFragment_to_feedFragment
+                )
+            }
+        }
+
+        loginViewModel.progressRegister.observe(viewLifecycleOwner) {
+                binding.progressBar.isVisible = it != null
+
+        }
+
+        loginViewModel.errorEvent.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Snackbar.make(binding.root, R.string.network_error, Snackbar.LENGTH_SHORT)
+                    .show()
+            }
         }
 
         return binding.root

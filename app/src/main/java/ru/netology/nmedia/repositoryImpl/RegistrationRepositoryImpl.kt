@@ -13,13 +13,42 @@ import ru.netology.nmedia.repository.RegistrationRepository
 import java.io.IOException
 
 class RegistrationRepositoryImpl : RegistrationRepository {
-    override suspend fun registerUser(login: String, pass: String, name: String, avatar: ModelPhoto) {
+    override suspend fun registerUser(login: String, pass: String, name: String) {
+        try {
+            val response = ApiServiceUser.service.registerUser(login, pass, name)
+
+            //если что-то пошло не так
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            val answer = response.body() ?: throw RuntimeException("Response body is null")
+
+            AppAuth.getInstanse().setAuth(answer.id, answer.token)
+
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
+
+    override suspend fun registerUserWithPhoto(
+        login: String,
+        pass: String,
+        name: String,
+        avatar: ModelPhoto
+    ) {
         try {
             val response = ApiServiceUser.service.registerWithPhoto(
                 login.toRequestBody("text/plain".toMediaType()),
                 pass.toRequestBody("text/plain".toMediaType()),
                 name.toRequestBody("text/plain".toMediaType()),
-                MultipartBody.Part.createFormData("file", avatar.file.name, avatar.file.asRequestBody())
+                MultipartBody.Part.createFormData(
+                    "file",
+                    avatar.file.name,
+                    avatar.file.asRequestBody()
+                )
             )
 
             //если что-то пошло не так

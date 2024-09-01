@@ -175,12 +175,9 @@ class FeedFragment : Fragment() {
 //            }
         }
 
-        viewModel.navigateFeedFragmentToProposalFragment.observe(viewLifecycleOwner,
-            Observer { navigate ->
-                if (navigate) {
-                    findNavController().navigate(R.id.action_feedFragment_to_proposalFragment)
-                }
-            })
+        viewModel.navigateFeedFragmentToProposalFragment.observe(viewLifecycleOwner) {
+            findNavController().navigate(R.id.action_feedFragment_to_proposalFragment)
+        }
 
         viewModel.state.observe(viewLifecycleOwner) { state ->
             if (state.error) {

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.repositoryImpl.AuthRepositoryImpl
+import ru.netology.nmedia.util.SingleLiveEvent
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val authRepository: AuthRepositoryImpl = AuthRepositoryImpl()
@@ -13,6 +14,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     //переменные для хранения логина и пароля
     lateinit var login: String
     lateinit var password: String
+
+    private val _progressRegister = SingleLiveEvent<Unit>()
+    val progressRegister: SingleLiveEvent<Unit> = _progressRegister
+
+    private val _errorEvent = SingleLiveEvent<String>()
+    val errorEvent: SingleLiveEvent<String> = _errorEvent
 
     //сохраняем логин и пароль из фрагмента авторизации
     fun saveLogin(text: String) {
@@ -25,15 +32,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onLoginTap() {
         viewModelScope.launch {
-
-            FeedModelState(loading = true)
-
+            _progressRegister.postValue(Unit)
             try {
                 authRepository.auth(login, password)
-
-                FeedModelState()
             } catch (e: Exception) {
-                FeedModelState(error = true)
+                _errorEvent.postValue("Error")
             }
         }
     }

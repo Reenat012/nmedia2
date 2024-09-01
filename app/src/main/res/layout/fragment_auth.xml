@@ -6,7 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".activity.AuthFragment">
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+       android:layout_marginTop="@dimen/_25dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"></ProgressBar>
+
     <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
@@ -19,9 +30,9 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_launcher_netology_foreground"
             android:layout_gravity="center"
-            android:layout_marginBottom="@dimen/_25dp" />
+            android:layout_marginBottom="@dimen/_25dp"
+            android:src="@drawable/ic_launcher_netology_foreground" />
 
         <TextView
             android:id="@+id/text_login"
@@ -55,9 +66,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/sign_in_button"
+            android:layout_marginTop="@dimen/_25dp"
             android:backgroundTint="@color/Blue"
-            android:layout_marginTop="@dimen/_25dp"/>
+            android:text="@string/sign_in_button" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
