@@ -4,4 +4,7 @@ package ru.netology.nmedia.util
 interface TextCallback {
     fun onLoginReceived(text: String)
     fun onPasswordReceived(text: String)
+    fun onRetryPasswordReceived(text: String)
+    fun onNameReceived(text: String)
+
 }

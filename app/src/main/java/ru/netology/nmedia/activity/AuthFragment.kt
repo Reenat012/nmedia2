@@ -8,15 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
-import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.databinding.ActivityNewPostBinding
 import ru.netology.nmedia.databinding.FragmentAuthBinding
-import ru.netology.nmedia.repository.AuthRepositoryImpl
+import ru.netology.nmedia.repositoryImpl.AuthRepositoryImpl
 import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.util.TextCallback
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.LoginViewModel
-import kotlin.math.log
 
 class AuthFragment : Fragment(), TextCallback {
 
@@ -69,6 +66,12 @@ class AuthFragment : Fragment(), TextCallback {
 
     override fun onPasswordReceived(password: String) {
         loginViewModel.savePassword(password)
+    }
+
+    override fun onRetryPasswordReceived(text: String) {
+    }
+
+    override fun onNameReceived(text: String) {
     }
 
 

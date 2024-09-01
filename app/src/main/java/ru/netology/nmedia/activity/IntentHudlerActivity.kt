@@ -92,7 +92,9 @@ class IntentHandlerActivity : AppCompatActivity() {
                         }
 
                         R.id.sign_up -> {
-                            //TODO регистрация
+                            findNavController(R.id.nav_host_fragment).navigate(
+                                R.id.action_feedFragment_to_registrationFragment
+                            )
                             true
                         }
 

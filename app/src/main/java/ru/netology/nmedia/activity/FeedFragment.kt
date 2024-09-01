@@ -17,13 +17,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.InvalidationTracker
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
+import okhttp3.internal.notify
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.R.id.tv_author
@@ -34,6 +37,7 @@ import ru.netology.nmedia.viewmodel.PostViewModel
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.adapter.PostViewHolder
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.util.StringArg
@@ -171,6 +175,13 @@ class FeedFragment : Fragment() {
 //            }
         }
 
+        viewModel.navigateFeedFragmentToProposalFragment.observe(viewLifecycleOwner,
+            Observer { navigate ->
+                if (navigate) {
+                    findNavController().navigate(R.id.action_feedFragment_to_proposalFragment)
+                }
+            })
+
         viewModel.state.observe(viewLifecycleOwner) { state ->
             if (state.error) {
                 Snackbar.make(binding.root, R.string.network_error, Snackbar.LENGTH_SHORT)
@@ -182,9 +193,14 @@ class FeedFragment : Fragment() {
             binding.progressBar.isVisible = state.loading
             binding.refresh.isRefreshing = state.refreshing
         }
+
         //клик на кнопку добавить пост
         binding.bottomSave.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (AppAuth.getInstanse().data.value != null) {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            } else {
+                findNavController().navigate(R.id.action_feedFragment_to_proposalFragment)
+            }
         }
 
         binding.refresh.setOnRefreshListener {

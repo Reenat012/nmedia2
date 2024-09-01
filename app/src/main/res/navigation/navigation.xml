@@ -22,6 +22,12 @@
         <action
             android:id="@+id/action_feedFragment_to_authFragment"
             app:destination="@id/authFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_proposalFragment"
+            app:destination="@id/proposalFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_registrationFragment"
+            app:destination="@id/registrationFragment" />
     </fragment>
 
     <fragment
@@ -53,6 +59,23 @@
         tools:layout="@layout/fragment_auth" >
         <action
             android:id="@+id/action_authFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/proposalFragment"
+        android:name="ru.netology.nmedia.activity.ProposalFragment"
+        android:label="fragment_proposal"
+        tools:layout="@layout/fragment_proposal" >
+        <action
+            android:id="@+id/action_proposalFragment_to_authFragment"
+            app:destination="@id/authFragment" />
+    </dialog>
+    <fragment
+        android:id="@+id/registrationFragment"
+        android:name="ru.netology.nmedia.activity.RegistrationFragment"
+        android:label="RegistrationFragment" >
+        <action
+            android:id="@+id/action_registrationFragment_to_feedFragment"
             app:destination="@id/feedFragment" />
     </fragment>
 

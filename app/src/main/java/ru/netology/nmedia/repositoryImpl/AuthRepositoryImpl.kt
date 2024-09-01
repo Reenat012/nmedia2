@@ -1,9 +1,10 @@
-package ru.netology.nmedia.repository
+package ru.netology.nmedia.repositoryImpl
 
 import ru.netology.nmedia.api.ApiServiceUser
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
+import ru.netology.nmedia.repository.AuthRepository
 import java.io.IOException
 
 class AuthRepositoryImpl : AuthRepository {

@@ -29,4 +29,12 @@
     <string name="sign_in_button">Sign in</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
+    <string name="name">Name</string>
+    <string name="retry_password">Retry password</string>
+    <string name="reg_name">Name</string>
+    <string name="reg_sign_up">Sign up</string>
+    <string name="downland_avatar" translatable="false">Downland avatar</string>
+    <string name="field_empty" translatable="false">Все поля регистрации должны быть заполнены, включая аватар</string>
+    <string name="password_different" translatable="false">Пароли не совпадают</string>
+    <string name="field_empty_password_different" translatable="false">Все поля регистрации должны быть заполнены, включая аватар. Пароли не совпадают!</string>
 </resources>
