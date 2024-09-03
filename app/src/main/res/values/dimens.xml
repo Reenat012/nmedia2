@@ -16,5 +16,7 @@
     <dimen name="icons_height">32dp</dimen>
     <dimen name="size_video_view">180dp</dimen>
     <dimen name="margin_photo_iv">20dp</dimen>
+    <dimen name="_25dp">25dp</dimen>
+    <dimen name="size_avatar_in_prev">100dp</dimen>
 
 </resources>

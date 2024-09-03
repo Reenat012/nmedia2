@@ -1,28 +1,26 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
-import android.graphics.ColorSpace.Model
 import android.net.Uri
-import android.view.Display.Mode
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.ModelPhoto
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repository.PostRepositoryImpl
+import ru.netology.nmedia.repositoryImpl.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
 
@@ -32,7 +30,8 @@ private val empty = Post(
     author = "",
     authorAvatar = "http://10.0.2.2:9999/avatars/netology.jpg",
     likedByMe = false,
-    published = ""
+    published = "",
+    authorId = 0
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -46,11 +45,29 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     //переменная для подсчета скрытых новых постов
     var countHidden = 0
 
+    //добавляем навигацию во viewModel
+    private val _navigateFeedFragmentToProposalFragment = SingleLiveEvent<Unit>()
+    val navigateFeedFragmentToProposalFragment: SingleLiveEvent<Unit> =
+        _navigateFeedFragmentToProposalFragment
+
+
     //неизменяемое состояние экрана
-    val data: LiveData<FeedModel> = repository.data.map {
-        FeedModel(posts = it, empty = it.isEmpty())
-    }
-        .asLiveData(Dispatchers.Default) //получаем LiveData из Flow на дефолтном потоке, потому что мапинг не требует ожидания
+    val data: LiveData<FeedModel> =
+        //впервую очередь смотрим на данные авторизации
+        AppAuth.getInstanse().data.flatMapLatest { token ->
+            val myId = token?.id
+
+            //читаем базу данных
+            repository.data.map { posts ->
+                FeedModel(
+                    posts.map {
+                        it.copy(ownedByMe = it.authorId == myId)
+                    }, empty = posts.isEmpty()
+                )
+            }
+        }
+            .asLiveData(Dispatchers.Default) //получаем LiveData из Flow на дефолтном потоке, потому что мапинг не требует ожидания
+
 
     private val _data = MutableLiveData<FeedModel>()
 
@@ -164,9 +181,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                     _state.value = FeedModelState(error = true)
                 }
             }
+
         }
     }
-
 
     //функция отмены редактирования и очистка поста
     fun cancelEdit() {
@@ -186,20 +203,29 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 //    }
 
     fun likeById(id: Long) {
-        //получаем состояние likedByMe поста по id
-        val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe ?: return
-        viewModelScope.launch {
-            //если true - dislike, false - like
-            try {
-                if (likedByMe) {
-                    repository.disLikeByIdAsync(id)
-                    //обновлять данные вручную не требуется так как они обновляются автоматически благодаря подписке к локальной базе данных
-                } else {
-                    repository.likeByIdAsync(id)
+        //нужно создать условие
+        //если пользователь вошел (если есть токен), можно лайкнуть
+        //если нет, предложить авторизоваться
+
+        if (AppAuth.getInstanse().data.value != null) {
+            //получаем состояние likedByMe поста по id
+            val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe ?: return
+            viewModelScope.launch {
+                //если true - dislike, false - like
+                try {
+                    if (likedByMe) {
+                        repository.disLikeByIdAsync(id)
+                        //обновлять данные вручную не требуется так как они обновляются автоматически благодаря подписке к локальной базе данных
+                    } else {
+                        repository.likeByIdAsync(id)
+                    }
+                } catch (e: Exception) {
+                    _state.value = FeedModelState(error = true)
                 }
-            } catch (e: Exception) {
-                _state.value = FeedModelState(error = true)
             }
+        } else {
+            //инициируем переход
+            _navigateFeedFragmentToProposalFragment.postValue(Unit)
         }
     }
 

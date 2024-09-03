@@ -1,25 +1,19 @@
 package ru.netology.nmedia.api
 
-
-
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
 import retrofit2.create
-import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
-import retrofit2.http.Path
-import ru.netology.nmedia.Post
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.dto.Media
+import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.dto.User
 import java.util.concurrent.TimeUnit
 
@@ -35,7 +29,7 @@ private val client = OkHttpClient.Builder()
                     .addHeader("Authorization", it)
                     .build()
             }
-                //либо заголовок остается неизменным
+            //либо заголовок остается неизменным
                 ?: chain.request()
         )
     }
@@ -47,35 +41,27 @@ private val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .build()
 
-interface PostApiService {
-    @GET("posts")
-    suspend fun getAll(): Response<List<Post>>
+interface UserApiService {
+    @FormUrlEncoded
+    @POST("users/authentication")
+    suspend fun updateUser(@Field("login") login: String, @Field("pass") pass: String): Response<Token>
 
-    @GET("posts/{id}")
-    suspend fun getById(@Path("id") id: Long): Response<Post>
-
-    @GET("posts/{id}/newer")
-    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
-
-    @POST("posts")
-    suspend fun savePost(@Body post: Post): Response<Post>
-
-    @DELETE("posts/{id}")
-    suspend fun removeById(@Path("id") id: Long): Response<Post>
-
-    @DELETE("posts/{id}/likes")
-    suspend fun dislikeById(@Path("id") id: Long): Response<Post>
-
-    @POST("posts/{id}/likes")
-    suspend fun likeById(@Path("id") id: Long): Response<Post>
+    @FormUrlEncoded
+    @POST("users/registration")
+    suspend fun registerUser(@Field("login") login: String, @Field("pass") pass: String, @Field("name") name: String): Response<Token>
 
     @Multipart
-    @POST("media")
-    suspend fun upload(@Part file: MultipartBody.Part) : Response<Media>
+    @POST("users/registration")
+    suspend fun registerWithPhoto(
+        @Part("login") login: RequestBody,
+        @Part("pass") pass: RequestBody,
+        @Part("name") name: RequestBody,
+        @Part media: MultipartBody.Part,
+    ): Response<Token>
 }
 
-object ApiService {
+object ApiServiceUser {
     val service by lazy {
-        retrofit.create<PostApiService>()
+        retrofit.create<UserApiService>()
     }
 }

@@ -37,7 +37,7 @@ class NewPostFragment : Fragment() {
     companion object {
         var Bundle.textArg: String? by StringArg
 
-        private const val IMAGE_MAX_SIZE = 2048
+        const val IMAGE_MAX_SIZE = 2048
     }
 
     override fun onCreateView(

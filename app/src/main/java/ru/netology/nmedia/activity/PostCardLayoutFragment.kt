@@ -29,6 +29,10 @@ class PostCardLayoutFragment : Fragment() {
         ownerProducer = ::requireParentFragment
     )
 
+    fun navigation() {
+        findNavController().navigate(R.id.action_feedFragment_to_authFragment)
+    }
+
     companion object {
         var Bundle.idArg: Long by LongArg
     }
@@ -123,13 +127,13 @@ class PostCardLayoutFragment : Fragment() {
 //            .into(binding.photoIv)
 
 
-
         binding.videoView.setOnClickListener {
             //получаем ссылку
             val url = Uri.parse(binding.tvVideoPublished.toString())
             //создаем интент
             val intent = Intent(Intent.ACTION_VIEW, url)
         }
+
         return binding.root
     }
 }
