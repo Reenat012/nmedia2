@@ -95,14 +95,19 @@ class FCMService : FirebaseMessagingService() {
 
         val notification = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_launcher_netology_foreground)
+            .setContentTitle(
+                getString(R.string.notification_user_save_post, post.author)
+            )
             .setContentText(
                 getString(
-                    R.string.notification_user_save_post,
-                    post.author
+                    R.string.notification_user_content_post,
+                    post.content
                 )
             )
             .setContentIntent(pendingIntent) //при клике на уведомление будет переход в активити
             .setAutoCancel(true)//закрытие уведомления после клика
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText(getString(R.string.content)))
             .build()
 
         if (ActivityCompat.checkSelfPermission(
