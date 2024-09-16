@@ -38,6 +38,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" /> <!-- разрешение на интернет -->
