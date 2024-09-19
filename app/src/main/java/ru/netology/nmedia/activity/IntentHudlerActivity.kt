@@ -70,48 +70,6 @@ class IntentHandlerActivity : AppCompatActivity() {
             )
         }
 
-        checkGoogleApiAvailability()
-
-        //запросить разрешение на показ уведомлений
-        requestNotificationsPermission()
-    }
-
-    private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
-            val code = isGooglePlayServicesAvailable(this@IntentHandlerActivity)
-            if (code == ConnectionResult.SUCCESS) {
-                return@with
-            }
-            if (isUserResolvableError(code)) {
-                getErrorDialog(this@IntentHandlerActivity, code, 9000)?.show()
-                return
-            }
-            Toast.makeText(
-                this@IntentHandlerActivity,
-                R.string.google_play_unavailable,
-                Toast.LENGTH_LONG
-            )
-                .show()
-        }
-
-//        FirebaseMessaging.getInstance().token.addOnSuccessListener {
-//            println(it)
-//        }
-    }
-
-    private fun requestNotificationsPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return
-        }
-
-        val permission = Manifest.permission.POST_NOTIFICATIONS
-
-        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-
-        requestPermissions(arrayOf(permission), 1)
-
         val viewModel by viewModels<AuthViewModel>()
 
 
@@ -159,6 +117,50 @@ class IntentHandlerActivity : AppCompatActivity() {
                     }
             }
         )
+
+        checkGoogleApiAvailability()
+
+        //запросить разрешение на показ уведомлений
+        requestNotificationsPermission()
+    }
+
+    private fun checkGoogleApiAvailability() {
+        with(GoogleApiAvailability.getInstance()) {
+            val code = isGooglePlayServicesAvailable(this@IntentHandlerActivity)
+            if (code == ConnectionResult.SUCCESS) {
+                return@with
+            }
+            if (isUserResolvableError(code)) {
+                getErrorDialog(this@IntentHandlerActivity, code, 9000)?.show()
+                return
+            }
+            Toast.makeText(
+                this@IntentHandlerActivity,
+                R.string.google_play_unavailable,
+                Toast.LENGTH_LONG
+            )
+                .show()
+        }
+
+//        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+//            println(it)
+//        }
+    }
+
+    private fun requestNotificationsPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return
+        }
+
+        val permission = Manifest.permission.POST_NOTIFICATIONS
+
+        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+
+        requestPermissions(arrayOf(permission), 1)
+
+
 
     }
 }
