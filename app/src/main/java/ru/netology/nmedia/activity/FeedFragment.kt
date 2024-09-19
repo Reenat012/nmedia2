@@ -5,14 +5,28 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.Group
+import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
+import androidx.room.InvalidationTracker
+import com.bumptech.glide.Glide
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
+import okhttp3.internal.notify
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.R.id.tv_author
@@ -23,7 +37,9 @@ import ru.netology.nmedia.viewmodel.PostViewModel
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.adapter.PostViewHolder
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
+import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.util.StringArg
 
 class FeedFragment : Fragment() {
@@ -49,7 +65,6 @@ class FeedFragment : Fragment() {
 
         //теперь имеем возможность обращаться к группе элементов
         val groupVideo = view?.findViewById<Group>(R.id.group_video)
-
 
         val adapter = PostAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
@@ -106,26 +121,98 @@ class FeedFragment : Fragment() {
                     R.id.action_feedFragment_to_postCardLayoutFragment,
                     Bundle().also { it.idArg = post.id })
             }
+
+            override fun openImage(post: Post) {
+                val uriPhoto = Uri.parse("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_viewPhotoFragment,
+                    bundleOf("uriKey" to uriPhoto) //передаем uri изображения с помощью ключа
+                )
+            }
         })
 
         binding.list.adapter = adapter
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            val newPost = posts.size > adapter.currentList.size
-            adapter.submitList(posts) {
+        viewModel.data.observe(viewLifecycleOwner) { model ->
+            val newPost = model.posts.size > adapter.currentList.size
+            adapter.submitList(model.posts) {
                 if (newPost) {
                     binding.list.smoothScrollToPosition(0) //сверху сразу будет отображаться новый пост
                 }
             } //при каждом изменении данных мы список постов записываем обновленный список постов
+
+            binding.emptyPosts.isVisible = model.empty
+        }
+
+        binding.buttonNewPosts.setOnClickListener {
+            //метод, который будет скрытые посты видимыми
+            lifecycleScope.launch { viewModel.changeHiddenPosts() }
+
+//            viewModel.refreshPosts()
+
+            binding.buttonNewPosts.visibility = View.GONE
+            binding.buttonTop.visibility = View.GONE
+
+        }
+
+        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                if (positionStart == 0) {
+
+                }
+            }
+        })
+
+        //получаем сгенерированные сервером посты
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            if (it > 0) {
+                binding.buttonNewPosts.visibility = View.VISIBLE
+                binding.buttonTop.visibility = View.VISIBLE
+            }
+//            Log.d("FeedFragment", "Newer count: $it")
+//            if (it > 0) {
+//                binding.buttonNewPosts.visibility = View.VISIBLE
+//                binding.buttonTop.visibility = View.VISIBLE
+//            }
+        }
+
+        viewModel.navigateFeedFragmentToProposalFragment.observe(viewLifecycleOwner) {
+            findNavController().navigate(R.id.action_feedFragment_to_proposalFragment)
+        }
+
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            if (state.error) {
+                Snackbar.make(binding.root, R.string.network_error, Snackbar.LENGTH_SHORT)
+                    .setAction(R.string.retry_loading) {
+                        viewModel.load()
+                    }
+                    .show()
+            }
+            binding.progressBar.isVisible = state.loading
+            binding.refresh.isRefreshing = state.refreshing
         }
 
         //клик на кнопку добавить пост
         binding.bottomSave.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (AppAuth.getInstanse().data.value != null) {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            } else {
+                findNavController().navigate(R.id.action_feedFragment_to_proposalFragment)
+            }
         }
+
+        binding.refresh.setOnRefreshListener {
+            viewModel.refreshPosts()
+        }
+
+//        binding.buttonRetry.setOnClickListener {
+//            viewModel.load()
+//        }//
 
         return binding.root
     }
+
 }
+
 
 
 

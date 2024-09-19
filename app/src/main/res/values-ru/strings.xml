@@ -5,5 +5,17 @@
 
     <string name="remove">Удалить</string>
     <string name="save">Сохранить</string>
+    <string name="save_menu">Сохранить</string>
+    <string name="clear">Очистить</string>
+    <string name="logout">Выйти</string>
+    <string name="sign_in">Войти</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="sign_in_button">Войти</string>
+    <string name="password">Пароль</string>
+    <string name="login">Логин</string>
+    <string name="name">Имя</string>
+    <string name="retry_password">Повторите пароль</string>
+    <string name="reg_name">Имя</string>
+    <string name="reg_sign_up">Зарегистрироваться</string>
 
 </resources>

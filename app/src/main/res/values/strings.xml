@@ -20,4 +20,26 @@
     <string name="notification_user_liked" translatable="false">User %1$s liked %2$s\'s post</string>
     <string name="notification_user_save_post" translatable="false">User %1$s add new post:</string>
     <string name="notification_user_content_post" translatable="false">Текст поста: "%1$s"</string>
+    <string name="network_error" translatable="false">Network error</string>
+    <string name="empty_posts" translatable="false">There is not posts</string>
+    <string name="retry_loading" translatable="false">Retry</string>
+    <string name="new_posts" translatable="false">Свежие посты</string>
+    <string name="save_menu">Save</string>
+    <string name="clear">Clear</string>
+    <string name="image_pick_error" translatable="false">Image pick error</string>
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="logout">Logout</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_up">Sign up</string>
+    <string name="sign_in_button">Sign in</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="name">Name</string>
+    <string name="retry_password">Retry password</string>
+    <string name="reg_name">Name</string>
+    <string name="reg_sign_up">Sign up</string>
+    <string name="downland_avatar" translatable="false">Downland avatar</string>
+    <string name="field_empty" translatable="false">Все поля регистрации должны быть заполнены, включая аватар</string>
+    <string name="password_different" translatable="false">Пароли не совпадают</string>
+    <string name="field_empty_password_different" translatable="false">Все поля регистрации должны быть заполнены, включая аватар. Пароли не совпадают!</string>
 </resources>

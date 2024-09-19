@@ -1,10 +1,15 @@
 package ru.netology.nmedia.adapter
 
+
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
+import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -12,6 +17,8 @@ import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.WallService
 import ru.netology.nmedia.databinding.ActivityPostCardLayoutBinding
+import ru.netology.nmedia.load
+import ru.netology.nmedia.loadWithoutCircle
 
 interface OnInteractionListener {
     fun onLike(post: Post)
@@ -20,6 +27,7 @@ interface OnInteractionListener {
     fun onEdit(post: Post)
     fun playVideoInUri(post: Post)
     fun openPost(post: Post)
+    fun openImage(post: Post)
 }
 
 typealias OnListener = (post: Post) -> Unit //можем вводить новые константы для типов, которые хотим использовать
@@ -48,9 +56,23 @@ class PostViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
     private val service = WallService()
 
+    val urlNeto = "http://10.0.2.2:9999/avatars/netology.jpg"
+    val urlSber = "http://10.0.2.2:9999/avatars/sber.jpg"
+    val urlTcs = "http://10.0.2.2:9999/avatars/tcs.jpg"
+    val url404 = "http://10.0.2.2:9999/avatars/404.png"
+
     @SuppressLint("QueryPermissionsNeeded")
     fun bind(post: Post) =
         binding.apply {
+            post.authorAvatar.let { ivAvatar.load("http://10.0.2.2:9999/avatars/$it") } //присваиваем новую аватарку
+            post.photoPost.let {
+                photoIv.loadWithoutCircle("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                if (post.attachment != null) {
+                    binding.photoIv.visibility = View.VISIBLE
+                }
+                //Если post.attachment равен null, то картинку нужно явно скрывать так как RecyclerView переиспользует элементы
+                else binding.photoIv.visibility = View.GONE
+            }
             tvAuthor.text = post.author
             tvPublished.text = post.published
             tvContent.text = post.content
@@ -59,6 +81,9 @@ class PostViewHolder(
             //текст будет записываться в атрибут text MaterialButton
             ivLikes.text = service.amount(post.likes)
             ivRepost.text = service.amount(post.reposts)
+
+            ivMenu.isVisible = post.ownedByMe
+
 
             ivLikes.setOnClickListener {
                 onLInteractionListener.onLike(post)
@@ -118,6 +143,10 @@ class PostViewHolder(
             //клик на контент -> перходим в отдельный пост
             tvContent.setOnClickListener {
                 onLInteractionListener.openPost(post)
+            }
+
+            photoIv.setOnClickListener {
+                onLInteractionListener.openImage(post)
             }
         }
 }
