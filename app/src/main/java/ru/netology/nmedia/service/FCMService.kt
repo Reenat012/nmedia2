@@ -17,6 +17,7 @@ import com.google.gson.Gson
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.IntentHandlerActivity
+import ru.netology.nmedia.auth.AppAuth
 import kotlin.random.Random
 
 class FCMService : FirebaseMessagingService() {
@@ -43,6 +44,46 @@ class FCMService : FirebaseMessagingService() {
                 Action.LIKE -> handleLike(Gson().fromJson(message.data[content], Like::class.java))
                 Action.SAVE_POST -> handleSavePost(Gson().fromJson(message.data[content], Post::class.java))
             }
+        }
+    }
+
+    private fun hundlePost(post: Post) {
+
+
+        //интент на переход в активити по клику на уведомление
+        val intent = Intent(this, IntentHandlerActivity::class.java)
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            -1,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_netology_foreground)
+            .setContentTitle(
+                getString(R.string.notification_user_save_post, post.author)
+            )
+            .setContentText(
+                getString(
+                    R.string.notification_user_content_post,
+                    post.content
+                )
+            )
+            .setContentIntent(pendingIntent) //при клике на уведомление будет переход в активити
+            .setAutoCancel(true)//закрытие уведомления после клика
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText(getString(R.string.content)))
+            .build()
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(this)
+                .notify(Random.nextInt(100_000), notification)//вызвать показ уведомления
         }
     }
 
@@ -123,6 +164,7 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         println(token)
+        AppAuth.getInstanse().sendPushToken(token)
     }
 }
 
