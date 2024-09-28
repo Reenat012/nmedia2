@@ -42,7 +42,12 @@ class FCMService : FirebaseMessagingService() {
         message.data[action]?.let {
             when (Action.valueOf(it)) {
                 Action.LIKE -> handleLike(Gson().fromJson(message.data[content], Like::class.java))
-                Action.SAVE_POST -> handleSavePost(Gson().fromJson(message.data[content], Post::class.java))
+                Action.SAVE_POST -> handleSavePost(
+                    Gson().fromJson(
+                        message.data[content],
+                        Post::class.java
+                    )
+                )
             }
         }
     }
@@ -73,8 +78,10 @@ class FCMService : FirebaseMessagingService() {
             )
             .setContentIntent(pendingIntent) //при клике на уведомление будет переход в активити
             .setAutoCancel(true)//закрытие уведомления после клика
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(getString(R.string.content)))
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(getString(R.string.content))
+            )
             .build()
 
         if (ActivityCompat.checkSelfPermission(
@@ -123,41 +130,72 @@ class FCMService : FirebaseMessagingService() {
     }
 
     private fun handleSavePost(post: Post) {
+        if (post.id == AppAuth.getInstanse().data.value?.id) {
+            //все ок, показываем уведомление
+            //интент на переход в активити по клику на уведомление
+            val intent = Intent(this, IntentHandlerActivity::class.java)
 
-        //интент на переход в активити по клику на уведомление
-        val intent = Intent(this, IntentHandlerActivity::class.java)
-
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            -1,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_netology_foreground)
-            .setContentTitle(
-                getString(R.string.notification_user_save_post, post.author)
-            )
-            .setContentText(
-                getString(
-                    R.string.notification_user_content_post,
-                    post.content
-                )
-            )
-            .setContentIntent(pendingIntent) //при клике на уведомление будет переход в активити
-            .setAutoCancel(true)//закрытие уведомления после клика
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(getString(R.string.content)))
-            .build()
-
-        if (ActivityCompat.checkSelfPermission(
+            val pendingIntent = PendingIntent.getActivity(
                 this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            NotificationManagerCompat.from(this)
-                .notify(Random.nextInt(100_000), notification)//вызвать показ уведомления
+                -1,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val notification = NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_launcher_netology_foreground)
+                .setContentTitle(
+                    getString(R.string.notification_test, post.content)
+                )
+                .setContentIntent(pendingIntent) //при клике на уведомление будет переход в активити
+                .setAutoCancel(true)//закрытие уведомления после клика
+                .build()
+
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                NotificationManagerCompat.from(this)
+                    .notify(Random.nextInt(100_000), notification)//вызвать показ уведомления
+            }
+        } else if (post.id.toInt() == 0) {
+            //анонимная утентификация
+            //переотправляем push token
+            AppAuth.getInstanse().sendPushToken()
+        } else if (post.id.toInt() != 0) {
+            //другая утентификация
+            //переотправляем push token
+            AppAuth.getInstanse().sendPushToken()
+        } else if (post.id == null) {
+            //все ок, показываем уведомление
+            //интент на переход в активити по клику на уведомление
+            val intent = Intent(this, IntentHandlerActivity::class.java)
+
+            val pendingIntent = PendingIntent.getActivity(
+                this,
+                -1,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val notification = NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_launcher_netology_foreground)
+                .setContentTitle(
+                    getString(R.string.notification_test, post.content)
+                )
+                .setContentIntent(pendingIntent) //при клике на уведомление будет переход в активити
+                .setAutoCancel(true)//закрытие уведомления после клика
+                .build()
+
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                NotificationManagerCompat.from(this)
+                    .notify(Random.nextInt(100_000), notification)//вызвать показ уведомления
+            }
         }
     }
 
