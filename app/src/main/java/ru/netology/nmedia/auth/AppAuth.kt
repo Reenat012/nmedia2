@@ -2,16 +2,27 @@ package ru.netology.nmedia.auth
 
 import android.content.Context
 import androidx.core.content.edit
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import ru.netology.nmedia.api.ApiServicePush
+import ru.netology.nmedia.api.PushApiService
+import ru.netology.nmedia.dto.PushToken
 import ru.netology.nmedia.dto.Token
+import java.security.spec.ECField
 
 class AppAuth private constructor(context: Context) {
 
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+
     //хранилище данных
     private val _data = MutableStateFlow<Token?>(null)
+
     //публичная ссылка на данные
     val data: StateFlow<Token?> = _data.asStateFlow()
 
@@ -27,6 +38,8 @@ class AppAuth private constructor(context: Context) {
             //чистим preference
             prefs.edit { clear() }
         }
+
+        sendPushToken()
     }
 
     //сохранить аутентификацию
@@ -41,6 +54,8 @@ class AppAuth private constructor(context: Context) {
             //обновляем хранилище _data
             _data.value = Token(id, token)
         }
+
+        sendPushToken()
     }
 
     //очистить аутентификацию
@@ -48,6 +63,8 @@ class AppAuth private constructor(context: Context) {
     fun clearAuth() {
         prefs.edit { clear() }
         _data.value = null
+
+        sendPushToken()
     }
 
     companion object {
@@ -62,7 +79,18 @@ class AppAuth private constructor(context: Context) {
         fun getInstanse() = appAuth ?: error("Need call init(context) before")
     }
 
+    fun sendPushToken(token: String? = null) {
+        CoroutineScope(Dispatchers.Default).launch {
+            val dto = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
 
+            try {
+                ApiServicePush.service.sendPushToken(dto)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                //ignore
+            }
+        }
+    }
 
 
 }
