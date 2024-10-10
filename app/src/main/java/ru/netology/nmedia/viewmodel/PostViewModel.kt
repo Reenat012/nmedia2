@@ -1,13 +1,13 @@
 package ru.netology.nmedia.viewmodel
 
-import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -15,14 +15,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.ModelPhoto
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repositoryImpl.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
+import javax.inject.Inject
 
 private val empty = Post(
     id = 0,
@@ -34,10 +33,12 @@ private val empty = Post(
     authorId = 0
 )
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: PostRepository = PostRepositoryImpl(
-        AppDb.getInstance(application).postDao()
-    )
+@HiltViewModel
+class PostViewModel @Inject constructor(
+    private val repository: PostRepository,
+    private val appAuth: AppAuth) :
+    ViewModel() {
+
     private val _state = MutableLiveData<FeedModelState>() //изменяемое состояние экрана
     val state: LiveData<FeedModelState>
         get() = _state
@@ -54,7 +55,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     //неизменяемое состояние экрана
     val data: LiveData<FeedModel> =
         //впервую очередь смотрим на данные авторизации
-        AppAuth.getInstanse().data.flatMapLatest { token ->
+        appAuth.data.flatMapLatest { token ->
             val myId = token?.id
 
             //читаем базу данных
@@ -207,7 +208,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         //если пользователь вошел (если есть токен), можно лайкнуть
         //если нет, предложить авторизоваться
 
-        if (AppAuth.getInstanse().data.value != null) {
+        if (appAuth.data.value != null) {
             //получаем состояние likedByMe поста по id
             val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe ?: return
             viewModelScope.launch {

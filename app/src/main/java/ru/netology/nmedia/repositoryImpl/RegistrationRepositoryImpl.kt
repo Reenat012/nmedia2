@@ -1,21 +1,27 @@
 package ru.netology.nmedia.repositoryImpl
 
+import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import ru.netology.nmedia.api.ApiServiceUser
+import ru.netology.nmedia.api.UserApiService
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.model.ModelPhoto
 import ru.netology.nmedia.repository.RegistrationRepository
 import java.io.IOException
+import javax.inject.Inject
 
-class RegistrationRepositoryImpl : RegistrationRepository {
+@AndroidEntryPoint
+class RegistrationRepositoryImpl(private val apiService: UserApiService) : RegistrationRepository {
+
+    @Inject
+    lateinit var appAuth: AppAuth
     override suspend fun registerUser(login: String, pass: String, name: String) {
         try {
-            val response = ApiServiceUser.service.registerUser(login, pass, name)
+            val response = apiService.registerUser(login, pass, name)
 
             //если что-то пошло не так
             if (!response.isSuccessful) {
@@ -24,7 +30,7 @@ class RegistrationRepositoryImpl : RegistrationRepository {
 
             val answer = response.body() ?: throw RuntimeException("Response body is null")
 
-            AppAuth.getInstanse().setAuth(answer.id, answer.token)
+            appAuth.setAuth(answer.id, answer.token)
 
         } catch (e: IOException) {
             throw NetworkError
@@ -40,7 +46,7 @@ class RegistrationRepositoryImpl : RegistrationRepository {
         avatar: ModelPhoto
     ) {
         try {
-            val response = ApiServiceUser.service.registerWithPhoto(
+            val response = apiService.registerWithPhoto(
                 login.toRequestBody("text/plain".toMediaType()),
                 pass.toRequestBody("text/plain".toMediaType()),
                 name.toRequestBody("text/plain".toMediaType()),
@@ -58,7 +64,7 @@ class RegistrationRepositoryImpl : RegistrationRepository {
 
             val answer = response.body() ?: throw RuntimeException("Response body is null")
 
-            AppAuth.getInstanse().setAuth(answer.id, answer.token)
+            appAuth.setAuth(answer.id, answer.token)
 
         } catch (e: IOException) {
             throw NetworkError

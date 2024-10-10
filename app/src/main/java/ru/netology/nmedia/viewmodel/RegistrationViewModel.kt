@@ -5,17 +5,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.api.UserApiService
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.ModelPhoto
 import ru.netology.nmedia.repositoryImpl.AuthRepositoryImpl
 import ru.netology.nmedia.repositoryImpl.RegistrationRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
+import javax.inject.Inject
 
-class RegistrationViewModel : ViewModel() {
-    private val registerRepository: RegistrationRepositoryImpl = RegistrationRepositoryImpl()
-
+@HiltViewModel
+class RegistrationViewModel @Inject constructor(private val registerRepository: RegistrationRepositoryImpl) : ViewModel() {
     lateinit var name: String
     lateinit var login: String
     lateinit var password: String

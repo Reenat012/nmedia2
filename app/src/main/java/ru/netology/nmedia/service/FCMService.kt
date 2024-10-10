@@ -14,16 +14,22 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.IntentHandlerActivity
 import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 import kotlin.random.Random
 
+@AndroidEntryPoint
 class FCMService : FirebaseMessagingService() {
     private val channelId = "server"
     private val action = "action"
     private val content = "content"
+
+    @Inject
+    lateinit var appAuth: AppAuth
     override fun onCreate() {
         super.onCreate()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -130,7 +136,7 @@ class FCMService : FirebaseMessagingService() {
     }
 
     private fun handleSavePost(post: Post) {
-        if (post.id == AppAuth.getInstanse().data.value?.id) {
+        if (post.id == appAuth.data.value?.id) {
             //все ок, показываем уведомление
             //интент на переход в активити по клику на уведомление
             val intent = Intent(this, IntentHandlerActivity::class.java)
@@ -162,11 +168,11 @@ class FCMService : FirebaseMessagingService() {
         } else if (post.id.toInt() == 0) {
             //анонимная утентификация
             //переотправляем push token
-            AppAuth.getInstanse().sendPushToken()
+            appAuth.sendPushToken()
         } else if (post.id.toInt() != 0) {
             //другая утентификация
             //переотправляем push token
-            AppAuth.getInstanse().sendPushToken()
+            appAuth.sendPushToken()
         } else if (post.id == null) {
             //все ок, показываем уведомление
             //интент на переход в активити по клику на уведомление
@@ -202,7 +208,7 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         println(token)
-        AppAuth.getInstanse().sendPushToken(token)
+        appAuth.sendPushToken(token)
     }
 }
 
