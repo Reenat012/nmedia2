@@ -19,7 +19,19 @@ import javax.inject.Singleton
 class ApiModule {
 
     companion object {
-        private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow"
+        private const val BASE_URL = "${BuildConfig.BASE_URL}api/slow/"
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseMessagingModule(): FirebaseMessagingModule {
+        return FirebaseMessagingModule()
+    }
+
+    @Provides
+    @Singleton
+    fun provideGoogleApiAvailabilityModule(): GoogleApiAvailabilityModule {
+        return GoogleApiAvailabilityModule()
     }
 
     @Provides
@@ -30,6 +42,7 @@ class ApiModule {
         }
     }
 
+    @Provides
     fun provideOkHttp(
         logging: HttpLoggingInterceptor,
         appAuth: AppAuth

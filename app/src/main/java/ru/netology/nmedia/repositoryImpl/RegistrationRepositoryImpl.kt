@@ -14,11 +14,10 @@ import ru.netology.nmedia.repository.RegistrationRepository
 import java.io.IOException
 import javax.inject.Inject
 
-@AndroidEntryPoint
-class RegistrationRepositoryImpl(private val apiService: UserApiService) : RegistrationRepository {
+class RegistrationRepositoryImpl @Inject constructor(
+    private val apiService: UserApiService,
+    private val appAuth: AppAuth) : RegistrationRepository {
 
-    @Inject
-    lateinit var appAuth: AppAuth
     override suspend fun registerUser(login: String, pass: String, name: String) {
         try {
             val response = apiService.registerUser(login, pass, name)

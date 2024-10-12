@@ -3,19 +3,17 @@ package ru.netology.nmedia.repositoryImpl
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.api.UserApiService
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.repository.AuthRepository
 import java.io.IOException
 import javax.inject.Inject
 
-@AndroidEntryPoint
-class AuthRepositoryImpl(private val apiService: UserApiService) : AuthRepository {
+class AuthRepositoryImpl @Inject constructor(
+    private val apiService: UserApiService,
+    private var appAuth: AppAuth
+) : AuthRepository {
 
-
-    @Inject
-    lateinit var appAuth: AppAuth
     override suspend fun auth(login: String, password: String) {
         try {
             val response = apiService.updateUser(login, password)
@@ -27,7 +25,7 @@ class AuthRepositoryImpl(private val apiService: UserApiService) : AuthRepositor
 
             val answer = response.body() ?: throw RuntimeException("Response body is null")
 
-           appAuth.setAuth(answer.id, answer.token)
+            appAuth.setAuth(answer.id, answer.token)
 
         } catch (e: IOException) {
             throw NetworkError

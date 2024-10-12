@@ -11,6 +11,7 @@ import androidx.constraintlayout.widget.Group
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -36,9 +37,7 @@ class FeedFragment(
     @Inject
     lateinit var appAuth: AppAuth
 
-    val viewModel: PostViewModel by viewModels(
-        ownerProducer = ::requireParentFragment
-    )
+    val viewModel: PostViewModel by activityViewModels()
 
     companion object {
         var Bundle.textArg: String? by StringArg

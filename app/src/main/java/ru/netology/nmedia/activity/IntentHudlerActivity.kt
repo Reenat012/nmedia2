@@ -16,7 +16,9 @@ import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.migration.CustomInjection.inject
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.FeedFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
@@ -25,7 +27,10 @@ import ru.netology.nmedia.viewmodel.AuthViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class IntentHandlerActivity : AppCompatActivity() {
+class IntentHandlerActivity(
+    private val firebaseMessaging: FirebaseMessaging,
+    private val googleApiAvailability: GoogleApiAvailability
+) : AppCompatActivity() {
 
     @Inject
     lateinit var appAuth: AppAuth
@@ -126,7 +131,7 @@ class IntentHandlerActivity : AppCompatActivity() {
     }
 
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(googleApiAvailability) {
             val code = isGooglePlayServicesAvailable(this@IntentHandlerActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with
@@ -143,9 +148,9 @@ class IntentHandlerActivity : AppCompatActivity() {
                 .show()
         }
 
-//        FirebaseMessaging.getInstance().token.addOnSuccessListener {
-//            println(it)
-//        }
+        firebaseMessaging.token.addOnSuccessListener {
+            println(it)
+        }
     }
 
     private fun requestNotificationsPermission() {
