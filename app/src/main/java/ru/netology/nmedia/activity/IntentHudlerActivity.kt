@@ -27,13 +27,16 @@ import ru.netology.nmedia.viewmodel.AuthViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class IntentHandlerActivity(
-    private val firebaseMessaging: FirebaseMessaging,
-    private val googleApiAvailability: GoogleApiAvailability
-) : AppCompatActivity() {
+class IntentHandlerActivity : AppCompatActivity() {
 
     @Inject
     lateinit var appAuth: AppAuth
+
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
