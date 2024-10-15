@@ -1,12 +1,9 @@
 package ru.netology.nmedia.application
 
 import android.app.Application
-import ru.netology.nmedia.auth.AppAuth
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 
-class App : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        AppAuth.init(this)
-    }
-}
+@HiltAndroidApp
+class App : Application()

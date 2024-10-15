@@ -9,7 +9,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.Attachment
 import ru.netology.nmedia.Post
-import ru.netology.nmedia.api.ApiService
+import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.entity.PostEntity
@@ -21,10 +21,12 @@ import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.model.ModelPhoto
 import ru.netology.nmedia.repository.PostRepository
 import java.io.IOException
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-class PostRepositoryImpl(
-    private val postDao: PostDao
+class PostRepositoryImpl @Inject constructor(
+    private val postDao: PostDao,
+    private val apiService: PostApiService
 ) : PostRepository {
     companion object {
         private const val BASE_URL = "http://10.0.2.2:9999/"
@@ -39,7 +41,7 @@ class PostRepositoryImpl(
 
     override suspend fun getAll() {
         try {
-            val response = ApiService.service.getAll()
+            val response = apiService.getAll()
             //если что-то пошло не так
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
@@ -67,7 +69,7 @@ class PostRepositoryImpl(
             delay(10.seconds)
 
             try {//получаем вновь сгенерированные посты
-                val postsResponse = ApiService.service.getNewer(newerId)
+                val postsResponse = apiService.getNewer(newerId)
 
                 //пробуем взять тело постов
                 val posts = postsResponse.body().orEmpty()
@@ -109,7 +111,7 @@ class PostRepositoryImpl(
             postDao.likeById(id)
 
             //отправляем запрос
-            val response = ApiService.service.likeById(id)
+            val response = apiService.likeById(id)
 
             //если что-то пошло не так
             if (!response.isSuccessful) {
@@ -133,7 +135,7 @@ class PostRepositoryImpl(
             postDao.likeById(id)
 
             //отправляем запрос
-            val response = ApiService.service.dislikeById(id)
+            val response = apiService.dislikeById(id)
 
             //если что-то пошло не так
             if (!response.isSuccessful) {
@@ -159,7 +161,7 @@ class PostRepositoryImpl(
             postDao.removeById(id)
 
             //отправляем запрос на удаление на сервер
-            val response = ApiService.service.removeById(id)
+            val response = apiService.removeById(id)
 
             //если что-то пошло не так
             if (!response.isSuccessful) {
@@ -188,7 +190,7 @@ class PostRepositoryImpl(
 
     override suspend fun saveAsync(post: Post): Post {
         try {
-            val response = ApiService.service.savePost(post)
+            val response = apiService.savePost(post)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
@@ -223,7 +225,7 @@ class PostRepositoryImpl(
     }
 
     private suspend fun upload(photo: ModelPhoto): Media {
-        val uploadResponse = ApiService.service.upload(
+        val uploadResponse = apiService.upload(
             MultipartBody.Part.createFormData("file", photo.file.name, photo.file.asRequestBody())
         )
 

@@ -1,6 +1,5 @@
 package ru.netology.nmedia.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -11,22 +10,23 @@ import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.FeedFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
-import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.adapter.PostViewHolder
 import ru.netology.nmedia.databinding.ActivityPostCardLayoutBinding
 import ru.netology.nmedia.util.LongArg
 import ru.netology.nmedia.viewmodel.PostViewModel
 
+@AndroidEntryPoint
 class PostCardLayoutFragment : Fragment() {
-    private val postViewModel: PostViewModel by viewModels(
-        ownerProducer = ::requireParentFragment
-    )
+
+    val postViewModel: PostViewModel by activityViewModels()
 
     fun navigation() {
         findNavController().navigate(R.id.action_feedFragment_to_authFragment)

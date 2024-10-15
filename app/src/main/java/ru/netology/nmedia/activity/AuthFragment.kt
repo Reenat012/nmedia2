@@ -1,30 +1,32 @@
 package ru.netology.nmedia.activity
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentAuthBinding
-import ru.netology.nmedia.repositoryImpl.AuthRepositoryImpl
 import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.util.TextCallback
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.LoginViewModel
 
+@AndroidEntryPoint
 class AuthFragment : Fragment(), TextCallback {
 
     //передаем текст в репозиторий для обработки
     companion object {
         var Bundle.textArg: String? by StringArg
-
-        val authRepositoryImpl: AuthRepositoryImpl = AuthRepositoryImpl()
+        
     }
+
+
 
     private val loginViewModel: LoginViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()

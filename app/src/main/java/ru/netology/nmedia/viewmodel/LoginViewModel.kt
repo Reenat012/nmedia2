@@ -2,15 +2,18 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.api.UserApiService
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.repositoryImpl.AuthRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
+import javax.inject.Inject
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
-    private val authRepository: AuthRepositoryImpl = AuthRepositoryImpl()
-
+@HiltViewModel
+class LoginViewModel @Inject constructor(private val authRepository: AuthRepositoryImpl) : ViewModel() {
     //переменные для хранения логина и пароля
     lateinit var login: String
     lateinit var password: String

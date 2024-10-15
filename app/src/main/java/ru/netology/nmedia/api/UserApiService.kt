@@ -17,30 +17,6 @@ import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.dto.User
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "http://10.0.2.2:9999/api/slow/"
-
-private val client = OkHttpClient.Builder()
-    .callTimeout(10, TimeUnit.SECONDS) //30 сек будем ждать вызова клиента
-    .addInterceptor { chain ->
-        chain.proceed(
-            //либо у нас есть токен и создается билдер с новым заголовком
-            AppAuth.getInstanse().data.value?.token?.let {
-                chain.request().newBuilder()
-                    .addHeader("Authorization", it)
-                    .build()
-            }
-            //либо заголовок остается неизменным
-                ?: chain.request()
-        )
-    }
-    .build()
-
-private val retrofit = Retrofit.Builder()
-    .addConverterFactory(GsonConverterFactory.create())
-    .client(client)
-    .baseUrl(BASE_URL)
-    .build()
-
 interface UserApiService {
     @FormUrlEncoded
     @POST("users/authentication")
@@ -58,10 +34,4 @@ interface UserApiService {
         @Part("name") name: RequestBody,
         @Part media: MultipartBody.Part,
     ): Response<Token>
-}
-
-object ApiServiceUser {
-    val service by lazy {
-        retrofit.create<UserApiService>()
-    }
 }

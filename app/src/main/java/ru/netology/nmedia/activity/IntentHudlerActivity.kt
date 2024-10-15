@@ -5,35 +5,44 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-
-import android.widget.Toast
-
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.migration.CustomInjection.inject
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.FeedFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityIntentHandlerBinding
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class IntentHandlerActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var appAuth: AppAuth
+
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityIntentHandlerBinding.inflate(layoutInflater)
+
+
 
         setContentView(binding.root)
 
@@ -109,7 +118,7 @@ class IntentHandlerActivity : AppCompatActivity() {
                         }
 
                         R.id.logout -> {
-                            AppAuth.getInstanse().clearAuth()
+                            appAuth.clearAuth()
                             true
                         }
 
@@ -125,7 +134,7 @@ class IntentHandlerActivity : AppCompatActivity() {
     }
 
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(googleApiAvailability) {
             val code = isGooglePlayServicesAvailable(this@IntentHandlerActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with
@@ -142,9 +151,9 @@ class IntentHandlerActivity : AppCompatActivity() {
                 .show()
         }
 
-//        FirebaseMessaging.getInstance().token.addOnSuccessListener {
-//            println(it)
-//        }
+        firebaseMessaging.token.addOnSuccessListener {
+            println(it)
+        }
     }
 
     private fun requestNotificationsPermission() {
@@ -159,7 +168,6 @@ class IntentHandlerActivity : AppCompatActivity() {
         }
 
         requestPermissions(arrayOf(permission), 1)
-
 
 
     }
