@@ -18,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
@@ -123,17 +124,23 @@ class FeedFragment(
             }
         })
 
-        binding.list.adapter = adapter
-        viewModel.data.observe(viewLifecycleOwner) { model ->
-            val newPost = model.posts.size > adapter.currentList.size
-            adapter.submitList(model.posts) {
-                if (newPost) {
-                    binding.list.smoothScrollToPosition(0) //сверху сразу будет отображаться новый пост
-                }
-            } //при каждом изменении данных мы список постов записываем обновленный список постов
-
-            binding.emptyPosts.isVisible = model.empty
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest {
+                adapter.submitData(it)
+            }
         }
+
+        binding.list.adapter = adapter
+//        viewModel.data.observe(viewLifecycleOwner) { model ->
+//            val newPost = model.posts.size > adapter.currentList.size
+//            adapter.s(model.posts) {
+//                if (newPost) {
+//                    binding.list.smoothScrollToPosition(0) //сверху сразу будет отображаться новый пост
+//                }
+//            } //при каждом изменении данных мы список постов записываем обновленный список постов
+//
+//            binding.emptyPosts.isVisible = model.empty
+//        }
 
         binding.buttonNewPosts.setOnClickListener {
             //метод, который будет скрытые посты видимыми

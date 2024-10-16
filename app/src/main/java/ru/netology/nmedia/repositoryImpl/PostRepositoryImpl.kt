@@ -1,10 +1,12 @@
 package ru.netology.nmedia.repositoryImpl
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.Attachment
@@ -19,6 +21,7 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.model.ModelPhoto
+import ru.netology.nmedia.repository.PostPagingSource
 import ru.netology.nmedia.repository.PostRepository
 import java.io.IOException
 import javax.inject.Inject
@@ -33,7 +36,15 @@ class PostRepositoryImpl @Inject constructor(
     }
 
     //подписка на локальную БД с видимыми постами
-    override val data = postDao.getAllVisible().map { it.map(PostEntity::toDto) }
+    override val data = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            PostPagingSource(
+                apiService
+            )
+        }
+    ).flow
+//        postDao.getAllVisible().map { it.map(PostEntity::toDto) }
 
     override fun repost(id: Long) {
         TODO("Not yet implemented")
