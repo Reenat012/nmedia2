@@ -19,7 +19,7 @@ interface PostApiService {
     @GET("posts")
     suspend fun getAll(): Response<List<Post>>
 
-    @GET("postslatest")
+    @GET("posts/latest")
     suspend fun getLatest(@Query("count") count: Int): Response<List<Post>>
 
     @GET("posts/{id}")

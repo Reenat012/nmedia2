@@ -70,8 +70,7 @@ class PostViewModel @Inject constructor(
                     it.copy(ownedByMe = it.authorId == myId)
                 }
             }
-                .flowOn(Dispatchers.Default)
-        }
+        }.flowOn(Dispatchers.Default)
 
     private val _data = MutableLiveData<FeedModel>()
 
@@ -80,10 +79,9 @@ class PostViewModel @Inject constructor(
         get() = _postCreated
 
     //подписка на количество новых постов
-
-    val newerCount: Flow<Int> = data.map { post ->
-        post.map { it.id
-    } }.flatMapLatest { repository.getNewer(it}) }
+//    val newerCount: Flow<Int> = data.map { post ->
+//        post.map { it.id
+//    } }.flatMapLatest { repository.getNewer(it) }
 
     //сохраняем фото в переменную
     private val _photo = MutableLiveData<ModelPhoto?>(null)

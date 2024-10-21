@@ -13,13 +13,13 @@ class PostPagingSource(private val apiService: PostApiService): PagingSource<Lon
     override suspend fun load(params: LoadParams<Long>): LoadResult<Long, Post> {
         try {
             val result = when (params) {
-                is LoadParams.Append -> apiService.getLatest(params.loadSize)
+                is LoadParams.Refresh -> apiService.getLatest(params.loadSize)
                 //скролл вниз
-                is LoadParams.Prepend -> {
+                is LoadParams.Append -> {
                     apiService.getBefore(id = params.key, count = params.loadSize)
                 }
                 //когда пользовател скроллит вверх, у него не будет загружаться новая страница
-                is LoadParams.Refresh -> return LoadResult.Page(
+                is LoadParams.Prepend -> return LoadResult.Page(
                     data = emptyList(), nextKey = null, prevKey = params.key
                 )
             }

@@ -15,6 +15,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -125,6 +127,14 @@ class FeedFragment(
         })
 
         lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest {
+                binding.refresh.isRefreshing = it.refresh is LoadState.Loading
+                        || it.append is LoadState.Loading
+                        || it.prepend is LoadState.Loading
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
             viewModel.data.collectLatest {
                 adapter.submitData(it)
             }
@@ -162,17 +172,17 @@ class FeedFragment(
         })
 
         //получаем сгенерированные сервером посты
-        viewModel.newerCount.observe(viewLifecycleOwner) {
-            if (it > 0) {
-                binding.buttonNewPosts.visibility = View.VISIBLE
-                binding.buttonTop.visibility = View.VISIBLE
-            }
-//            Log.d("FeedFragment", "Newer count: $it")
+//        viewModel.newerCount.observe(viewLifecycleOwner) {
 //            if (it > 0) {
 //                binding.buttonNewPosts.visibility = View.VISIBLE
 //                binding.buttonTop.visibility = View.VISIBLE
 //            }
-        }
+////            Log.d("FeedFragment", "Newer count: $it")
+////            if (it > 0) {
+////                binding.buttonNewPosts.visibility = View.VISIBLE
+////                binding.buttonTop.visibility = View.VISIBLE
+////            }
+//        }
 
         viewModel.navigateFeedFragmentToProposalFragment.observe(viewLifecycleOwner) {
             findNavController().navigate(R.id.action_feedFragment_to_proposalFragment)
@@ -199,8 +209,17 @@ class FeedFragment(
             }
         }
 
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest {
+                binding.refresh.isRefreshing = it.refresh is LoadState.Loading
+                        || it.append is LoadState.Loading
+                        || it.prepend is LoadState.Loading
+            }
+        }
+
         binding.refresh.setOnRefreshListener {
-            viewModel.refreshPosts()
+            adapter.refresh()
+//            viewModel.refreshPosts()
         }
 
 //        binding.buttonRetry.setOnClickListener {
