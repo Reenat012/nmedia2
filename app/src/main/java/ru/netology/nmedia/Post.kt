@@ -1,6 +1,10 @@
 package ru.netology.nmedia
 
 import android.net.Uri
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.Relation
 import ru.netology.nmedia.enumeration.AttachmentType
 
 data class Post(
@@ -23,5 +27,5 @@ data class Post(
 
 data class Attachment(
     val url: String,
-    val type: AttachmentType,
+    val type: AttachmentType
 )

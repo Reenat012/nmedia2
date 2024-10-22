@@ -104,7 +104,7 @@ class PostRepositoryImpl @Inject constructor(
     override fun getAllVisible() {
         //если ответ от сервера приходит не 0, значит появились новые посты
         //получаем посты только с локальной БД
-        postDao.getAllVisible()
+        postDao.getPosts()
     }
 
     override suspend fun getHiddenCount(): Flow<Int> {
