@@ -25,7 +25,8 @@ import javax.inject.Singleton
 @Singleton
 class AppAuth @Inject constructor(
     @ApplicationContext
-    private val context: Context) {
+    private val context: Context
+) {
 
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
 
@@ -86,10 +87,11 @@ class AppAuth @Inject constructor(
 
     fun sendPushToken(token: String? = null) {
         CoroutineScope(Dispatchers.Default).launch {
-            val dto = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
-
             try {
-                val entryPoint = EntryPointAccessors.fromApplication(context, AppAuthEntryPoint::class.java)
+                val dto = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
+
+                val entryPoint =
+                    EntryPointAccessors.fromApplication(context, AppAuthEntryPoint::class.java)
                 entryPoint.getPushApiService().sendPushToken(dto)
             } catch (e: Exception) {
                 e.printStackTrace()

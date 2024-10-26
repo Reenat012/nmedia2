@@ -60,9 +60,7 @@ class AuthFragment : Fragment(), TextCallback {
             if (it!= null) {
                 binding.progressBar.visibility = View.GONE
                 //переходим обратно в feedFragment
-                findNavController().navigate(
-                    R.id.action_authFragment_to_feedFragment
-                )
+                findNavController().navigateUp()
             }
         }
 
