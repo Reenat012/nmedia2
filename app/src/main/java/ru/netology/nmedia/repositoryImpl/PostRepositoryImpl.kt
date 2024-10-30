@@ -3,7 +3,6 @@ package ru.netology.nmedia.repositoryImpl
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import androidx.paging.map
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -16,6 +15,8 @@ import ru.netology.nmedia.Attachment
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
@@ -32,7 +33,9 @@ import kotlin.time.Duration.Companion.seconds
 
 class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
-    private val apiService: PostApiService
+    private val apiService: PostApiService,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: AppDb
 ) : PostRepository {
     companion object {
         private const val BASE_URL = "http://10.0.2.2:9999/"
@@ -45,7 +48,12 @@ class PostRepositoryImpl @Inject constructor(
         pagingSourceFactory = {
             postDao.getPagingSourse()
         },
-        remoteMediator = PostRemoteMediator(apiService, postDao)
+        remoteMediator = PostRemoteMediator(
+            apiService = apiService,
+            postDao = postDao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb
+        )
     ).flow
         .map {
             it.map(PostEntity::toDto)
