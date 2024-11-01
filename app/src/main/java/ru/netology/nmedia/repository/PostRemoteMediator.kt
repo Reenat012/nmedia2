@@ -41,11 +41,11 @@ class PostRemoteMediator(
                 //когда пользовател скроллит вверх, у него не будет загружаться новая страница
                 ////postRemoteKeyDao.min() загружает самый новый пост из БД
                 LoadType.PREPEND -> {
+                    // Отключаем автоматический PREPEND
+                    return MediatorResult.Success(true)
+                    
 //                    val id = postRemoteKeyDao.max() ?: return MediatorResult.Success(false)
 //                    apiService.getAfter(id, state.config.pageSize)
-
-                    //отключаем автоматический prepend
-                    apiService.getAll()
                 }
             }
 
