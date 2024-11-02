@@ -31,7 +31,20 @@ class PostRemoteMediator(
     ): MediatorResult {
         try {
             val result = when (loadType) {
-                LoadType.REFRESH -> apiService.getLatest(state.config.pageSize)
+                LoadType.REFRESH -> {
+                    val count = postDao.count()
+                    if (count == 0) {
+                        // Обновляем ключ BEFORE до текущего минимального значения
+                        val minId = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
+                        apiService.getBefore(minId, state.config.pageSize)
+                    } else {
+                        // Если база данных не пуста, не обновляем ключ BEFORE
+                        return MediatorResult.Success(true)
+                    }
+
+//                    apiService.getLatest(state.config.pageSize)
+                }
+
                 //скролл вниз
                 //postRemoteKeyDao.min() загружает самый старый пост из БД
                 LoadType.APPEND -> {
@@ -43,7 +56,7 @@ class PostRemoteMediator(
                 LoadType.PREPEND -> {
                     // Отключаем автоматический PREPEND
                     return MediatorResult.Success(true)
-                    
+
 //                    val id = postRemoteKeyDao.max() ?: return MediatorResult.Success(false)
 //                    apiService.getAfter(id, state.config.pageSize)
                 }
@@ -72,6 +85,7 @@ class PostRemoteMediator(
                                     PostRemoteKeyEntity.KeyType.AFTER,
                                     data.first().id
                                 ),
+
                                 PostRemoteKeyEntity(
                                     //берем самый первый пост из пришедшего списка
                                     PostRemoteKeyEntity.KeyType.BEFORE,

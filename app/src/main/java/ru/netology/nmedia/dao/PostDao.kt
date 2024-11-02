@@ -58,4 +58,7 @@ interface PostDao {
 
     @Query("DELETE FROM PostEntity")
     suspend fun clear()
+
+    @Query("SELECT COUNT(*) FROM PostEntity")
+    suspend fun count(): Int
 }
