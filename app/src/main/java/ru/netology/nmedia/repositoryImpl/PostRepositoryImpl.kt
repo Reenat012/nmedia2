@@ -3,6 +3,8 @@ package ru.netology.nmedia.repositoryImpl
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.insertSeparators
 import androidx.paging.map
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -11,7 +13,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import ru.netology.nmedia.Ad
 import ru.netology.nmedia.Attachment
+import ru.netology.nmedia.FeedItem
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
@@ -29,6 +33,7 @@ import ru.netology.nmedia.repository.PostRemoteMediator
 import ru.netology.nmedia.repository.PostRepository
 import java.io.IOException
 import javax.inject.Inject
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 class PostRepositoryImpl @Inject constructor(
@@ -43,7 +48,7 @@ class PostRepositoryImpl @Inject constructor(
 
     //подписка на локальную БД с видимыми постами
     @OptIn(ExperimentalPagingApi::class)
-    override val data = Pager(
+    override val data: Flow<PagingData<FeedItem>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
             postDao.getPagingSourse()
@@ -55,8 +60,16 @@ class PostRepositoryImpl @Inject constructor(
             appDb = appDb
         )
     ).flow
-        .map {
-            it.map(PostEntity::toDto)
+        .map { pagingData ->
+            pagingData.map(PostEntity::toDto)
+                //реализуем вставку элементов с рекламой
+                //insertSeparators последовательно обходит элементы от previous (предыдущий элемент) до next(следующий элемент)
+                .insertSeparators { previous, next ->
+                    //через каждые 5 элементов впихиваем рекламу
+                    if (previous?.id?.rem(5)?.toInt() == 0) {
+                        Ad(Random.nextLong(), "figma.jpg")
+                    } else null
+                }
         }
 //        postDao.getAllVisible().map { it.map(PostEntity::toDto) }
 

@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.FeedItem
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.model.FeedModel
@@ -59,18 +60,20 @@ class PostViewModel @Inject constructor(
 
 
     //неизменяемое состояние экрана
-    val data: Flow<PagingData<Post>> =
+    val data: Flow<PagingData<FeedItem>> =
         //впервую очередь смотрим на данные авторизации
         appAuth.data.flatMapLatest { token ->
             val myId = token?.id
 
             //читаем базу данных
             repository.data.map { posts ->
-                posts.map {
-                    it.copy(ownedByMe = it.authorId == myId)
-                }
+                posts.map { post ->
+                    if (post is Post) {
+                    post.copy(ownedByMe = post.authorId == myId)
+                } else post
             }
         }.flowOn(Dispatchers.Default)
+        }
 
     private val _data = MutableLiveData<FeedModel>()
 

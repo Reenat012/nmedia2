@@ -7,8 +7,12 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import ru.netology.nmedia.enumeration.AttachmentType
 
+sealed interface FeedItem {
+    val id: Long
+}
+
 data class Post(
-    val id: Long,
+    override val id: Long,
     val author: String,
     val authorId: Long,
     val authorAvatar: String = "http://10.0.2.2:9999/avatars/netology.jpg",
@@ -23,7 +27,12 @@ data class Post(
     var attachment: Attachment? = null,
     val photoPost: String? = null,
     val ownedByMe: Boolean = false
-)
+) : FeedItem
+
+data class Ad(
+    override val id: Long,
+    val image: String
+) : FeedItem
 
 data class Attachment(
     val url: String,

@@ -2,12 +2,13 @@ package ru.netology.nmedia.repository
 
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
+import ru.netology.nmedia.FeedItem
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.model.ModelPhoto
 
 interface PostRepository {
     //подписка на посты
-    val data: Flow<PagingData<Post>>
+    val data: Flow<PagingData<FeedItem>>
     fun repost(id: Long)
     suspend fun getAll()
     fun getNewer(newerId: Long) : Flow<Int>
