@@ -204,6 +204,6 @@ class AdViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(ad: Ad) {
-        binding.imageAd.load("http://10.0.2.2:9999/media/${ad.image}")
+        binding.imageAd.loadWithoutCircle("http://10.0.2.2:9999/media/${ad.image}")
     }
 }
