@@ -27,6 +27,7 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.PostCardLayoutFragment.Companion.idArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
+import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.util.StringArg
@@ -140,7 +141,16 @@ class FeedFragment(
             }
         }
 
-        binding.list.adapter = adapter
+        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = PostLoadingStateAdapter {
+                adapter.retry()
+            },
+            footer = PostLoadingStateAdapter {
+                adapter.retry()
+            }
+        )
+
+
 //        viewModel.data.observe(viewLifecycleOwner) { model ->
 //            val newPost = model.posts.size > adapter.currentList.size
 //            adapter.s(model.posts) {
