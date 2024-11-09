@@ -5,12 +5,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.flatMap
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
@@ -53,22 +59,18 @@ class PostViewModel @Inject constructor(
 
 
     //неизменяемое состояние экрана
-    val data: LiveData<FeedModel> =
+    val data: Flow<PagingData<Post>> =
         //впервую очередь смотрим на данные авторизации
         appAuth.data.flatMapLatest { token ->
             val myId = token?.id
 
             //читаем базу данных
             repository.data.map { posts ->
-                FeedModel(
-                    posts.map {
-                        it.copy(ownedByMe = it.authorId == myId)
-                    }, empty = posts.isEmpty()
-                )
+                posts.map {
+                    it.copy(ownedByMe = it.authorId == myId)
+                }
             }
-        }
-            .asLiveData(Dispatchers.Default) //получаем LiveData из Flow на дефолтном потоке, потому что мапинг не требует ожидания
-
+        }.flowOn(Dispatchers.Default)
 
     private val _data = MutableLiveData<FeedModel>()
 
@@ -77,10 +79,9 @@ class PostViewModel @Inject constructor(
         get() = _postCreated
 
     //подписка на количество новых постов
-    val newerCount: LiveData<Int> = data.switchMap {
-        repository.getNewer(it.posts.firstOrNull()?.id ?: 0L)
-            .asLiveData(Dispatchers.Default)
-    }
+//    val newerCount: Flow<Int> = data.map { post ->
+//        post.map { it.id
+//    } }.flatMapLatest { repository.getNewer(it) }
 
     //сохраняем фото в переменную
     private val _photo = MutableLiveData<ModelPhoto?>(null)
@@ -210,7 +211,8 @@ class PostViewModel @Inject constructor(
 
         if (appAuth.data.value != null) {
             //получаем состояние likedByMe поста по id
-            val likedByMe = data.value?.posts?.find { it.id == id }?.likedByMe ?: return
+            val likedByMe = _data.value?.posts?.find { it.id == id }?.likedByMe ?: return
+
             viewModelScope.launch {
                 //если true - dislike, false - like
                 try {

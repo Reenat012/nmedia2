@@ -1,5 +1,9 @@
 package ru.netology.nmedia.repositoryImpl
 
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.map
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -11,6 +15,8 @@ import ru.netology.nmedia.Attachment
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
@@ -19,6 +25,7 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.model.ModelPhoto
+import ru.netology.nmedia.repository.PostRemoteMediator
 import ru.netology.nmedia.repository.PostRepository
 import java.io.IOException
 import javax.inject.Inject
@@ -26,14 +33,32 @@ import kotlin.time.Duration.Companion.seconds
 
 class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
-    private val apiService: PostApiService
+    private val apiService: PostApiService,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: AppDb
 ) : PostRepository {
     companion object {
         private const val BASE_URL = "http://10.0.2.2:9999/"
     }
 
     //подписка на локальную БД с видимыми постами
-    override val data = postDao.getAllVisible().map { it.map(PostEntity::toDto) }
+    @OptIn(ExperimentalPagingApi::class)
+    override val data = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            postDao.getPagingSourse()
+        },
+        remoteMediator = PostRemoteMediator(
+            apiService = apiService,
+            postDao = postDao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb
+        )
+    ).flow
+        .map {
+            it.map(PostEntity::toDto)
+        }
+//        postDao.getAllVisible().map { it.map(PostEntity::toDto) }
 
     override fun repost(id: Long) {
         TODO("Not yet implemented")
@@ -93,7 +118,7 @@ class PostRepositoryImpl @Inject constructor(
     override fun getAllVisible() {
         //если ответ от сервера приходит не 0, значит появились новые посты
         //получаем посты только с локальной БД
-        postDao.getAllVisible()
+        postDao.getPosts()
     }
 
     override suspend fun getHiddenCount(): Flow<Int> {

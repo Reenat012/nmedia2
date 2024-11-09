@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import okhttp3.internal.ignoreIoExceptions
 import ru.netology.nmedia.Attachment
 import ru.netology.nmedia.Post

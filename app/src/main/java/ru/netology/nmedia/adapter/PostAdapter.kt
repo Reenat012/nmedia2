@@ -10,6 +10,7 @@ import android.widget.PopupMenu
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.navigation.Navigation.findNavController
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -35,7 +36,7 @@ typealias OnRemoveListener = (post: Post) -> Unit
 
 class PostAdapter(
     private val onInteractionListener: OnInteractionListener
-) : ListAdapter<Post, PostViewHolder>(PostDiffUtil) {
+) : PagingDataAdapter<Post, PostViewHolder>(PostDiffUtil) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = ActivityPostCardLayoutBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -46,7 +47,8 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val post = getItem(position) ?: return
+        holder.bind(post)
     }
 }
 

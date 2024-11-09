@@ -12,8 +12,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.FeedFragment.Companion.textArg
@@ -58,9 +60,71 @@ class PostCardLayoutFragment : Fragment() {
 
         val postId = arguments?.idArg
 
-        postViewModel.data.observe(viewLifecycleOwner) { model ->
-            //получаем нужный пост по id, если null выходим из метода
-            val post = model.posts.find { it.id == postId } ?: return@observe
+
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            postViewModel.data.collect {model ->
+//                val post = model.posts.find { it.id == postId } ?: return@observe
+//                val viewHolder = PostViewHolder(binding, object : OnInteractionListener {
+//
+//                    override fun onEdit(post: Post) {
+//                        postViewModel.edit(post)
+//                        findNavController().navigate(
+//                            R.id.action_postCardLayoutFragment_to_newPostFragment,
+//                            Bundle().apply {
+//                                textArg = post.content
+//                            })
+//                    }
+//
+//                    override fun onLike(post: Post) {
+//                        postViewModel.likeById(post.id)
+//                    }
+//
+//                    override fun onRemove(post: Post) {
+//                        postViewModel.removeById(post.id)
+//                        findNavController().navigateUp()
+//                    }
+//
+//                    override fun onRepost(post: Post) {
+//                        val intent = Intent().apply {
+//                            action = Intent.ACTION_SEND
+//                            type = "text/plain"
+//                            putExtra(Intent.EXTRA_TEXT, post.content)
+//                        }
+//
+//                        val shareIntent = Intent.createChooser(intent, "Share Post")
+//                        startActivity(shareIntent)
+//                    }
+//
+//                    override fun playVideoInUri(post: Post) {
+//                        postViewModel.playVideo(post)
+//                        //получаем url
+//                        val url = post.video.toString()
+//                        //создаем интент
+//                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+//
+//                        startActivity(intent)
+//                    }
+//
+//                    override fun openPost(post: Post) {
+//                    }
+//
+//                    override fun openImage(post: Post) {
+//                        val uriPhoto = Uri.parse("http://10.0.2.2:9999/media/${post.attachment?.url}")
+//
+//                        findNavController().navigate(
+//                            R.id.action_feedFragment_to_viewPhotoFragment,
+//                            bundleOf("uriKey" to uriPhoto) //передаем uri изображения с помощью ключа
+//                        )
+//                    }
+//
+//                })
+//                viewHolder.bind(post)
+//            }
+//            }
+
+//        postViewModel.data.observe(viewLifecycleOwner) { model ->
+//            //получаем нужный пост по id, если null выходим из метода
+//            val post = model.posts.find { it.id == postId } ?: return@observe
             val viewHolder = PostViewHolder(binding, object : OnInteractionListener {
 
                 override fun onEdit(post: Post) {
@@ -115,8 +179,8 @@ class PostCardLayoutFragment : Fragment() {
                 }
 
             })
-            viewHolder.bind(post)
-        }
+//            viewHolder.bind(post)
+//        }
 
         //получаем изображение с сервера и присваиваем его photo_iv
 //        Glide.with(this)

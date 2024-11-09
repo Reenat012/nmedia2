@@ -1,17 +1,25 @@
 package ru.netology.nmedia.dao
 
 import androidx.lifecycle.LiveData
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import ru.netology.nmedia.Post
 import ru.netology.nmedia.entity.PostEntity
 
 @Dao
 interface PostDao {
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     fun getAll(): Flow<List<PostEntity>>
+
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
+    fun getPagingSourse(): PagingSource<Int, PostEntity>
+
+    @Query("SELECT * FROM PostEntity ORDER BY id COLLATE NOCASE ASC")
+    fun getPosts(): PagingSource<Int, PostEntity>
 
     @Query("SELECT * FROM PostEntity WHERE hidden = 0 ORDER BY id DESC")
     fun getAllVisible(): Flow<List<PostEntity>>
@@ -47,4 +55,10 @@ interface PostDao {
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
+
+    @Query("DELETE FROM PostEntity")
+    suspend fun clear()
+
+    @Query("SELECT COUNT(*) FROM PostEntity")
+    suspend fun count(): Int
 }
