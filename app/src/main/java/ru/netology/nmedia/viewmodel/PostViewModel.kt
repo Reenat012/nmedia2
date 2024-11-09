@@ -43,7 +43,8 @@ private val empty = Post(
 @HiltViewModel
 class PostViewModel @Inject constructor(
     private val repository: PostRepository,
-    private val appAuth: AppAuth) :
+    private val appAuth: AppAuth
+) :
     ViewModel() {
 
     private val _state = MutableLiveData<FeedModelState>() //изменяемое состояние экрана
@@ -69,10 +70,10 @@ class PostViewModel @Inject constructor(
             repository.data.map { posts ->
                 posts.map { post ->
                     if (post is Post) {
-                    post.copy(ownedByMe = post.authorId == myId)
-                } else post
-            }
-        }.flowOn(Dispatchers.Default)
+                        post.copy(ownedByMe = post.authorId == myId)
+                    } else post
+                }
+            }.flowOn(Dispatchers.Default)
         }
 
     private val _data = MutableLiveData<FeedModel>()
