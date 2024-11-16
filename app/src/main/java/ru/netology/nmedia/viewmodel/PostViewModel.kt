@@ -60,7 +60,8 @@ class PostViewModel @Inject constructor(
         _navigateFeedFragmentToProposalFragment
 
 
-    //неизменяемое состояние экрана
+    //паттерн наблюдателя
+    @OptIn(ExperimentalCoroutinesApi::class)
     val data: Flow<PagingData<FeedItem>> =
         //впервую очередь смотрим на данные авторизации
         appAuth.data.flatMapLatest { token ->
@@ -103,7 +104,6 @@ class PostViewModel @Inject constructor(
     fun load() {
         viewModelScope.launch {
             //создаем фоновый поток
-            //вызываем значок загрузки
             //postValue безопасный метод в фоновом потоке вместо value, безопасно пробрасывает результат на основной поток MainThread
             _state.postValue(FeedModelState())
 
