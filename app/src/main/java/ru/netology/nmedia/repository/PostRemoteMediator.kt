@@ -40,6 +40,8 @@ class PostRemoteMediator(
                     } else {
                         //в остальных случаях getAfter
                         apiService.getAfter(maxId, state.config.pageSize)
+
+//                        return MediatorResult.Success(false)
                     }
 
 //                    apiService.getLatest(state.config.pageSize)
@@ -54,11 +56,8 @@ class PostRemoteMediator(
                 //когда пользовател скроллит вверх, у него не будет загружаться новая страница
                 ////postRemoteKeyDao.min() загружает самый новый пост из БД
                 LoadType.PREPEND -> {
-                    // Отключаем автоматический PREPEND
-                    return MediatorResult.Success(true)
-
-//                    val id = postRemoteKeyDao.max() ?: return MediatorResult.Success(false)
-//                    apiService.getAfter(id, state.config.pageSize)
+                    val id = postRemoteKeyDao.max() ?: return MediatorResult.Success(false)
+                    apiService.getAfter(id, state.config.pageSize)
                 }
             }
 
@@ -75,7 +74,7 @@ class PostRemoteMediator(
                     LoadType.REFRESH -> {
                         //очищаем таблицу с постами
                         //по условию дз очищать таблицу не нужно
-//                        postDao.clear()
+                        postDao.clear()
 
                         val count = postDao.count()
 
@@ -106,24 +105,6 @@ class PostRemoteMediator(
                                 )
                             )
                         }
-
-//                        // и записывем оба ключа
-//                        postRemoteKeyDao.insert(
-//                            listOf(
-//
-//                                PostRemoteKeyEntity(
-//                                    //берем самый первый пост из пришедшего списка
-//                                    PostRemoteKeyEntity.KeyType.AFTER,
-//                                    data.first().id
-//                                ),
-//
-//                                PostRemoteKeyEntity(
-//                                    //берем самый первый пост из пришедшего списка
-//                                    PostRemoteKeyEntity.KeyType.BEFORE,
-//                                    data.last().id
-//                                )
-//                            )
-//                        )
                     }
 
                     LoadType.PREPEND -> {

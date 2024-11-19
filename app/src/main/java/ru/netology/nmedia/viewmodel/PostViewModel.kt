@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.FeedItem
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.model.FeedModel
@@ -42,7 +43,8 @@ private val empty = Post(
 @HiltViewModel
 class PostViewModel @Inject constructor(
     private val repository: PostRepository,
-    private val appAuth: AppAuth) :
+    private val appAuth: AppAuth
+) :
     ViewModel() {
 
     private val _state = MutableLiveData<FeedModelState>() //изменяемое состояние экрана
@@ -58,19 +60,22 @@ class PostViewModel @Inject constructor(
         _navigateFeedFragmentToProposalFragment
 
 
-    //неизменяемое состояние экрана
-    val data: Flow<PagingData<Post>> =
+    //паттерн наблюдателя
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val data: Flow<PagingData<FeedItem>> =
         //впервую очередь смотрим на данные авторизации
         appAuth.data.flatMapLatest { token ->
             val myId = token?.id
 
             //читаем базу данных
             repository.data.map { posts ->
-                posts.map {
-                    it.copy(ownedByMe = it.authorId == myId)
+                posts.map { post ->
+                    if (post is Post) {
+                        post.copy(ownedByMe = post.authorId == myId)
+                    } else post
                 }
-            }
-        }.flowOn(Dispatchers.Default)
+            }.flowOn(Dispatchers.Default)
+        }
 
     private val _data = MutableLiveData<FeedModel>()
 
@@ -99,7 +104,6 @@ class PostViewModel @Inject constructor(
     fun load() {
         viewModelScope.launch {
             //создаем фоновый поток
-            //вызываем значок загрузки
             //postValue безопасный метод в фоновом потоке вместо value, безопасно пробрасывает результат на основной поток MainThread
             _state.postValue(FeedModelState())
 

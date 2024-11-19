@@ -7,26 +7,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.widget.Group
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
-import androidx.paging.LoadStates
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Post
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.PostCardLayoutFragment.Companion.idArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
+import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.util.StringArg
@@ -57,9 +55,6 @@ class FeedFragment(
             container,
             false
         )
-
-        //теперь имеем возможность обращаться к группе элементов
-        val groupVideo = view?.findViewById<Group>(R.id.group_video)
 
         val adapter = PostAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
@@ -134,13 +129,21 @@ class FeedFragment(
             }
         }
 
-        lifecycleScope.launchWhenCreated {
-            viewModel.data.collectLatest {
-                adapter.submitData(it)
-            }
-        }
 
-        binding.list.adapter = adapter
+        //пытаемся отменить поток
+
+
+        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = PostLoadingStateAdapter {
+                adapter.retry()
+
+            },
+            footer = PostLoadingStateAdapter {
+                adapter.retry()
+            }
+        )
+
+
 //        viewModel.data.observe(viewLifecycleOwner) { model ->
 //            val newPost = model.posts.size > adapter.currentList.size
 //            adapter.s(model.posts) {
@@ -162,14 +165,6 @@ class FeedFragment(
             binding.buttonTop.visibility = View.GONE
 
         }
-
-        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                if (positionStart == 0) {
-
-                }
-            }
-        })
 
         //получаем сгенерированные сервером посты
 //        viewModel.newerCount.observe(viewLifecycleOwner) {
@@ -199,6 +194,8 @@ class FeedFragment(
             binding.progressBar.isVisible = state.loading
             binding.refresh.isRefreshing = state.refreshing
         }
+        
+
 
         //клик на кнопку добавить пост
         binding.bottomSave.setOnClickListener {
@@ -210,18 +207,29 @@ class FeedFragment(
         }
 
         lifecycleScope.launchWhenCreated {
-            adapter.loadStateFlow.collectLatest {
-                binding.refresh.isRefreshing = it.refresh is LoadState.Loading
-                        || it.append is LoadState.Loading
-                        || it.prepend is LoadState.Loading
+            adapter.loadStateFlow.collectLatest { state ->
+                binding.refresh.isRefreshing =
+                    state.refresh is LoadState.Loading
+
+            }
+        }
+
+
+
+        //подписка на посты
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest {
+                adapter.submitData(it)
             }
         }
 
         binding.refresh.setOnRefreshListener {
             adapter.refresh()
+
+
 //            viewModel.refreshPosts()
         }
-
+//
 //        binding.buttonRetry.setOnClickListener {
 //            viewModel.load()
 //        }//
